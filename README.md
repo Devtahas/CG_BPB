@@ -150,7 +150,10 @@ python ultra_global3.py
 
 > ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
 
-3. منتظر بمانید تا اسکن کامل شود و پیام **Done** نمایش داده شود
+3. منتظر بمانید تا اسکن کامل شود و پیام **Done** نمایش داده شود برای مثال :
+   
+> ![پایان اسکن](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(501).png)
+
 
 ---
 
