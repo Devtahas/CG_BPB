@@ -84,8 +84,11 @@ USER_UUID = "یک-UUID-رندوم-اینجا"
 ## 🚀 نحوه اجرا: (البته میتوانید از بخش release نرم افزار را دانلود و اجرا  کنید بدون نیاز به ران کردن و اجرای هیچ نوع کد!)
 
 ```bash
-python ultra_global3.py
+python bpb2.py
 ```
+## محیط نرم افزار 
+
+> ![نرم افزار](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(500).png)
 
 ---
 
