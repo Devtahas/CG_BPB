@@ -1,5 +1,14 @@
+آخ ببخشید! حق با شماست. من تو نسخه قبلی از کدهای HTML (مثل <div>) استفاده کردم که گیت‌هاب گاهی اوقات اونا رو توی راست‌چین کردن به هم می‌ریزه و دقیقا مثل عکس شما متن‌ها رو خراب می‌کنه.
 
+الان دقیقاً همون قالب ساده، تمیز و استاندارد خودت رو نگه داشتم و فقط اون بخش‌های مربوط به فایل .exe، دانلود نرم‌افزار و عکس رو به همون سبک خودت بهش اضافه کردم که یکدست بمونه و اصلاً به هم نریزه.
 
+کد زیر رو کامل کپی کن، این بار صددرصد بدون مشکل و شیک نشون داده میشه:
+
+code
+Markdown
+download
+content_copy
+expand_less
 # 🚀 اسکنر چندپورته Cloudflare و تولید خودکار کانفیگ VLESS
 
 > ابزار پیشرفته و چندنخی برای شناسایی آی‌پی‌های سالم Cloudflare، تست پورت و کیفیت اتصال و تولید کانفیگ‌های VLESS آماده استفاده در کلاینت‌های Xray/Karing و ایجاد لینک سابسکریپشن.
@@ -42,7 +51,7 @@
 
 ## 🖥️ پیش‌نیازها
 
-* Python **3.9+**
+* Python **3.9+** (فقط در صورت اجرای سورس‌کد)
 * ویندوز (توصیه شده، ولی لینوکس هم قابل اجراست)
 * اینترنت پایدار
 
@@ -50,191 +59,206 @@
 
 ```bash
 pip install requests colorama urllib3
-```
+⚙️ تنظیمات اولیه
 
----
+قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (ultra_global3.py) ویرایش کنید:
 
-## ⚙️ تنظیمات اولیه
-
-قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`ultra_global3.py`) ویرایش کنید:
-
-```python
+code
+Python
+download
+content_copy
+expand_less
 WORKER_HOST = "your-worker.workers.dev"
 WS_PATH = "/your-websocket-path"
 USER_UUID = "یک-UUID-رندوم-اینجا"
-```
 
-> ⚠️ UUID رندوم بسازید: [https://www.uuidgenerator.net/](https://www.uuidgenerator.net/)
+⚠️ UUID رندوم بسازید: https://www.uuidgenerator.net/
 
----
+🔧 تنظیمات قابل شخصی‌سازی
+متغیر	توضیح
+HTTP_PORTS	پورت‌هایی که تست می‌شوند
+CLOUDFLARE_CIDRS	رنج‌های آی‌پی Cloudflare
+SAMPLES_PER_CIDR	تعداد نمونه‌برداری از هر رنج
+MAX_WORKERS	تعداد تردهای همزمان
+TIMEOUT	تایم‌اوت اتصال
+DNS_SERVERS	لیست DNSهای مورد استفاده
+🚀 نحوه اجرا
 
-## 🔧 تنظیمات قابل شخصی‌سازی
+شما می‌توانید این ابزار را به دو روش اجرا کنید:
 
-| متغیر              | توضیح                        |
-| ------------------ | ---------------------------- |
-| `HTTP_PORTS`       | پورت‌هایی که تست می‌شوند     |
-| `CLOUDFLARE_CIDRS` | رنج‌های آی‌پی Cloudflare     |
-| `SAMPLES_PER_CIDR` | تعداد نمونه‌برداری از هر رنج |
-| `MAX_WORKERS`      | تعداد تردهای همزمان          |
-| `TIMEOUT`          | تایم‌اوت اتصال               |
-| `DNS_SERVERS`      | لیست DNSهای مورد استفاده     |
+1️⃣ روش اول: استفاده از نرم‌افزار (آسان‌ترین روش - مخصوص ویندوز)
 
----
+بدون نیاز به نصب پایتون و کدنویسی! تنها کافیست فایل .exe را دانلود کرده و با یک کلیک اجرا کنید:
 
-## 🚀 نحوه اجرا
+📥 دانلود نرم‌افزار از بخش Releases
 
-```bash
+![alt text](اینجا_لینک_عکس_اسکرین_شات_از_برنامه_رو_بذار)
+
+2️⃣ روش دوم: اجرای سورس‌کد (پایتون)
+
+اگر ترجیح می‌دهید از سورس‌کد استفاده کنید:
+
+code
+Bash
+download
+content_copy
+expand_less
 python ultra_global3.py
-```
+🎯 حالت‌های اجرا
+1️⃣ حالت پیش‌فرض (Default Scanner)
 
----
+اسکن خودکار رنج‌های Cloudflare
 
-## 🎯 حالت‌های اجرا
+مناسب برای پیدا کردن IP سالم و تمیز
 
-### 1️⃣ حالت پیش‌فرض (Default Scanner)
+2️⃣ حالت سفارشی (Custom Scanner)
 
-* اسکن خودکار رنج‌های Cloudflare
-* مناسب برای پیدا کردن IP سالم و تمیز
+وارد کردن IP دلخواه
 
-### 2️⃣ حالت سفارشی (Custom Scanner)
+مناسب برای تست هدفمند و محدود
 
-* وارد کردن IP دلخواه
-* مناسب برای تست هدفمند و محدود
+📝 آموزش بدست آوردن مقادیر WORKER_HOST و WS_PATH
+1️⃣ ساخت پنل BPB و دریافت کانفیگ‌ها
 
----
+وارد پنل BPB شوید
 
-## 📝 آموزش بدست آوردن مقادیر WORKER_HOST و WS_PATH
+کانفیگ‌ها را دانلود کنید
 
-### 1️⃣ ساخت پنل BPB و دریافت کانفیگ‌ها
+یک کانفیگ انتخاب و باز کنید
 
-1. وارد پنل BPB شوید
-2. کانفیگ‌ها را دانلود کنید
-3. یک کانفیگ انتخاب و باز کنید
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/config-sample.png.jpg)
 
-> ![نمونه کانفیگ](https://github.com/Devtahas/config-generator-/blob/main/assets/config-sample.png.jpg)
+2️⃣ پیدا کردن WORKER_HOST و WS_PATH
 
----
+کانفیگ موردنظر را در کلاینت باز کنید و روی ویرایش کلیک کنید
 
-### 2️⃣ پیدا کردن WORKER_HOST و WS_PATH
+دنبال path بگردید
 
-1. کانفیگ موردنظر را در کلاینت باز کنید و روی **ویرایش** کلیک کنید
-2. دنبال **path** بگردید
-3. **WORKER_HOST**: آدرس ورکر (مثال: `test.sajdgsh.workers.dev`)
-4. **WS_PATH**: رشته WebSocket path (مثال: `/NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560`)
+WORKER_HOST: آدرس ورکر (مثال: test.sajdgsh.workers.dev)
 
+WS_PATH: رشته WebSocket path (مثال: /NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560)
 
-
----
-
-### 3️⃣ جایگذاری در اسکنر
-
-```python
+3️⃣ جایگذاری در اسکنر
+code
+Python
+download
+content_copy
+expand_less
 WORKER_HOST = "test.sajdgsh.workers.dev"
 WS_PATH = "/NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560"
 USER_UUID = "یک-UUID-رندوم-اینجا"
-```
+4️⃣ اجرای اسکنر
 
----
+اطمینان از عدم اتصال به VPN
 
-### 4️⃣ اجرای اسکنر
+شروع اسکن:
 
-1. اطمینان از عدم اتصال به VPN
-2. اجرای دستور:
+یا فایل نرم‌افزار (.exe) دانلود شده را باز کنید.
 
-```bash
+یا دستور پایتون زیر را اجرا کنید:
+
+code
+Bash
+download
+content_copy
+expand_less
 python ultra_global3.py
-```
 
-> ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
 
-3. منتظر بمانید تا اسکن کامل شود و پیام **Done** نمایش داده شود
+منتظر بمانید تا اسکن کامل شود و پیام Done نمایش داده شود
 
----
+5️⃣ پیدا کردن فایل خروجی
 
-### 5️⃣ پیدا کردن فایل خروجی
+مسیر: D:\allconfigs\
 
-1. مسیر: `D:\allconfigs\`
-2. فایل‌ها:
+فایل‌ها:
 
-```
-Configs/            # کانفیگ‌های JSON
+code
+Text
+download
+content_copy
+expand_less
+Configs/             # کانفیگ‌های JSON
 scan_log.txt         # گزارش اسکن
 Verified_IPs.txt     # IPهای سالم
 sub.txt              # سابسکریپشن base64
-```
 
-> ![پوشه خروجی](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(488).png)
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(488).png)
 
----
+6️⃣ آپلود سابسکریپشن در GitHub
 
-### 6️⃣ آپلود سابسکریپشن در GitHub
+وارد GitHub شوید
 
-1. وارد [GitHub](http://github.com/) شوید
-2. ریپو بسازید و `sub.txt` را آپلود کنید
-3. روی گزینه **Raw** کلیک کنید تا لینک مستقیم دریافت شود
+ریپو بسازید و sub.txt را آپلود کنید
 
-> ![آپلود در گیت‌هاب](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(489).png)
+روی گزینه Raw کلیک کنید تا لینک مستقیم دریافت شود
 
-> ![raw لینک](https://github.com/Devtahas/config-generator-/blob/main/assets/photo_2026-02-20_18-31-16.jpg)
----
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(489).png)
 
-### 7️⃣ استفاده در کلاینت‌ها
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/photo_2026-02-20_18-31-16.jpg)
 
-1. لینک Raw را کپی کنید
-2. در کلاینت Karing یا v2rayNG، گزینه **Import Subscription** را بزنید
-3. لینک را پیست کنید و Update کنید ✅
+7️⃣ استفاده در کلاینت‌ها
 
-> ![نمونه Karing](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(490).png)
+لینک Raw را کپی کنید
 
----
+در کلاینت Karing یا v2rayNG، گزینه Import Subscription را بزنید
 
-### 8️⃣ نکته مهم
+لینک را پیست کنید و Update کنید ✅
+
+![alt text](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(490).png)
+
+8️⃣ نکته مهم
 
 اگر بعد از چند روز سرعت کند شد:
 
-* دوباره اسکنر را اجرا کنید
-* فایل جدید `sub.txt` را آپلود کنید و قبلی را حذف کنید
-* لینک سابسکریپشن به‌صورت خودکار آپدیت می‌شود
+دوباره اسکنر را اجرا کنید
 
----
+فایل جدید sub.txt را آپلود کنید و قبلی را حذف کنید
 
-## 📱 کلاینت‌های پیشنهادی
+لینک سابسکریپشن به‌صورت خودکار آپدیت می‌شود
 
-| کلاینت           | لینک دانلود                                                         |
-| ---------------- | ------------------------------------------------------------------- |
-| **Karing**       | [اندروید/ویندوز/لینوکس](https://github.com/KaringX/karing/releases) |
-| **v2rayNG**      | [اندروید](https://github.com/2dust/v2rayNG/releases)                |
-| **v2rayN**       | [ویندوز](https://github.com/2dust/v2rayN/releases)                  |
-| **Hiddify Next** | [اندروید/iOS](https://github.com/hiddify/hiddify-next/releases)     |
+📱 کلاینت‌های پیشنهادی
+کلاینت	لینک دانلود
+Karing	اندروید/ویندوز/لینوکس
+v2rayNG	اندروید
+v2rayN	ویندوز
+Hiddify Next	اندروید/iOS
+⚡ نکات افزایش سرعت
 
----
+افزایش MAX_WORKERS
 
-## ⚡ نکات افزایش سرعت
+کاهش SAMPLES_PER_CIDR
 
-* افزایش `MAX_WORKERS`
-* کاهش `SAMPLES_PER_CIDR`
-* کوتاه نگه داشتن لیست DNS
+کوتاه نگه داشتن لیست DNS
 
----
+🔐 نکات امنیتی و مهم
 
-## 🔐 نکات امنیتی و مهم
+بهترین عملکرد روی پورت‌های TLS
 
-* بهترین عملکرد روی پورت‌های TLS
-* کیفیت شبکه و ISP بر نتایج تاثیرگذار است
-* این ابزار برای اهداف آموزشی و تحقیقاتی منتشر شده است
+کیفیت شبکه و ISP بر نتایج تاثیرگذار است
 
----
+این ابزار برای اهداف آموزشی و تحقیقاتی منتشر شده است
 
-## ❗ سلب مسئولیت
+❗ سلب مسئولیت
 
 استفاده نادرست از این ابزار بر عهده کاربر است.
 
----
+⭐ حمایت
 
-## ⭐ حمایت
+⭐ ستاره دادن به ریپو
 
-* ⭐ ستاره دادن به ریپو
-* 🐛 ثبت Issue برای باگ‌ها
-* 🔧 ارسال Pull Request برای بهبود
+🐛 ثبت Issue برای باگ‌ها
 
---
+🔧 ارسال Pull Request برای بهبود
+
+code
+Code
+download
+content_copy
+expand_less
+**فقط کافیه تو کدهای بالا دو جا رو با لینک‌های خودت پر کنی:**
+1. تو بخش `## 🚀 نحوه اجرا`، بجای `اینجا_لینک_صفحه_ریلیز_گیت_هابت_رو_بذار` لینک دانلود رو بذار.
+2. پایین همون قسمت، بجای `اینجا_لینک_عکس_اسکرین_شات_از_برنامه_رو_بذار` آدرس عکس جدیدت رو بذار.
+
+اینطوری ساختار گیت‌هاب اصلا به هم نمی‌ریزه و کاملا خوانا میمونه. خسته نباشی واقعا پروژه‌ی تمیزی ساختی!
