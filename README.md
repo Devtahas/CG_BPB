@@ -110,7 +110,9 @@ python bpb2.py
 ## به کمک دو روش میتوانید مقادیر را بدست اورید
 روش اول ( آسان ترین راه ) به ربات ما در پلتفرم های بله و تلگرام با ایدی @helper_BPB2_BOT مراجعه کرده و کانفیگی که از پنل گرفتید رو برای ربات ارسال کنید تا مقادیر را برای شما بفرستد 
 
-> ![محیط ربات](https://github.com/Devtahas/config-generator-/blob/main/assets/photo_2026-02-22_23-07-24.jpg)
+> ![محیط ربات](https://github.com/Devtahas/config-generator-/blob/main/assets/photo_2026-02-22_23-11-59.jpg)
+
+
 ##روش دوم ( دستی )
 ### 1️⃣ ساخت پنل BPB و دریافت کانفیگ‌ها
 
