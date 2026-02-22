@@ -56,7 +56,7 @@ pip install requests colorama urllib3
 
 ## ⚙️ تنظیمات اولیه
 
-قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`ultra_global3.py`) ویرایش کنید:
+قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`bpb2.py`) ویرایش کنید:
 
 ```python
 WORKER_HOST = "your-worker.workers.dev"
@@ -145,7 +145,7 @@ USER_UUID = "یک-UUID-رندوم-اینجا"
 2. اجرای دستور:
 
 ```bash
-python ultra_global3.py
+python bpb2.py
 ```
 
 > ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
