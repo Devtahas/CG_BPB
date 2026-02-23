@@ -56,7 +56,7 @@ pip install requests colorama urllib3
 
 ## ⚙️ تنظیمات اولیه
 
-قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`bpb2.py`) ویرایش کنید:
+قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`bpb6.py`) ویرایش کنید:
 
 ```python
 WORKER_HOST = "your-worker.workers.dev"
@@ -84,7 +84,7 @@ USER_UUID = "یک-UUID-رندوم-اینجا"
 ## 🚀 نحوه اجرا: (البته میتوانید از بخش release نرم افزار را دانلود و اجرا  کنید بدون نیاز به ران کردن و اجرای هیچ نوع کد!)
 
 ```bash
-python bpb2.py
+python bpb6.py
 ```
 ## محیط نرم افزار 
 
@@ -151,7 +151,7 @@ USER_UUID = "یک-UUID-رندوم-اینجا"
 2. اجرای دستور:
 
 ```bash
-python bpb2.py
+python bpb6.py
 ```
 
 > ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
