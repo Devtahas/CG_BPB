@@ -1,36 +1,41 @@
-name: Build Windows EXE
+name: Build and Release EXE
 
 on:
   push:
     tags:
-      - 'v*' # این اکشن فقط زمانی اجرا میشه که یک تگ مثل v1.0.0 بسازید
+      - 'v*' # این اکشن فقط زمانی اجرا میشه که تگ ورژن جدید بزنی (مثلا v1.0.2)
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: windows-latest # چون فایل exe میخوایم، روی سرور ویندوز اجراش میکنیم
+    runs-on: windows-latest # ساخت روی سرور ویندوز برای خروجی exe
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # نسخه پایدار پایتون
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller requests colorama urllib3
 
       - name: Build EXE with PyInstaller
         run: |
-          pyinstaller --onefile --noconfirm --name CloudflareScanner bpb2.py
+          # اینجا فرض کردیم اسم فایل پایتون شما bpb6.py است.
+          # اگر اسمش چیز دیگه‌ایه، تو خط پایین به جای bpb6.py اسم فایلت رو بنویس.
+          pyinstaller --onefile --name CG_BPB bpb6.py 
 
-      - name: Upload to Release
+      - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/CloudflareScanner.exe
+          files: dist/CG_BPB.exe # فایلی که ربات ساخته رو آپلود میکنه
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
