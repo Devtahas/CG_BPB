@@ -104,6 +104,14 @@ python bpb6.py
 * وارد کردن IP دلخواه
 * مناسب برای تست هدفمند و محدود
 
+3️⃣### حالت  Deep Scanner (Ports 1 to 65535 - Takes Time!))
+* مانند حالت پیشفرض اما با تمام پورت های موجود دنیا و کمتر شناخته شده شروع به تست میکند
+* مناسب برای شرایط سخت
+ 
+4️⃣### حالت  Hope Mode (Ports 1 to 65535 + Massive DNS List))
+* این حالت در سخترین شرایط ممکن از لیست عظیم DNS های کمتر شناخته شده و پورت های کمتر شناخته شده استفاده میکند
+* مناسب برای شرایط بسیار سخت
+* مدت زیادی و اینترنت زیادی مصرف میکند
 ---
 
 ## 📝 آموزش بدست آوردن مقادیر WORKER_HOST و WS_PATH
@@ -154,7 +162,7 @@ USER_UUID = "یک-UUID-رندوم-اینجا"
 python bpb6.py
 ```
 
-> ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(487).png)
+> ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(519).png)
 
 3. منتظر بمانید تا اسکن کامل شود و پیام **Done** نمایش داده شود برای مثال :
    
