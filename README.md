@@ -1,4 +1,6 @@
-
+![Build](https://github.com/Devtahas/CG_BPB/actions/workflows/build.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/Devtahas/CG_BPB)
+![License](https://img.shields.io/github/license/Devtahas/CG_BPB)
 
 # 🚀 اسکنر چندپورته Cloudflare و تولید خودکار کانفیگ VLESS
 
