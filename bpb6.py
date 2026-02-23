@@ -81,17 +81,61 @@ STANDARD_DNS = [
 
 # دی‌ان‌اس‌های عظیم برای حالت Hope Mode
 HOPE_DNS = STANDARD_DNS + [
-    {"name": "NextDNS",    "ip": "45.90.28.0"},
-    {"name": "OpenDNS",    "ip": "208.67.222.222"},
+    {"name": "Cloudflare", "ip": "1.1.1.1"},
+    {"name": "Google",     "ip": "8.8.8.8"},
+    {"name": "Quad9",      "ip": "9.9.9.9"},
+    {"name": "3DNS",       "ip": "77.77.77.77"},
+    {"name": "Shecan1",    "ip": "178.22.122.100"},
+    {"name": "Shecan2",    "ip": "185.51.200.2"},
+    {"name": "x",          "ip": "94.140.15.15"},
+    {"name": "AS20860 DNS","ip": "87.117.202.100"},
     {"name": "AdGuard",    "ip": "94.140.14.14"},
-    {"name": "Yandex",     "ip": "77.88.8.8"},
-    {"name": "RadarGame",  "ip": "10.202.10.10"},
-    {"name": "403.online", "ip": "10.202.10.202"},
-    {"name": "Begzar",     "ip": "185.55.226.26"},
-    {"name": "HostIran",   "ip": "172.29.0.100"},
-    {"name": "CleanBrows", "ip": "185.228.168.9"},
-    {"name": "Level3",     "ip": "4.2.2.4"},
-    {"name": "Verisign",   "ip": "64.6.64.6"}
+    {"name": "Adguard Unfiltered","ip": "94.140.14.140"},
+    {"name": "AliDNS",     "ip": "223.5.5.5"},
+    {"name": "Alternate DNS","ip": "198.101.242.73"},
+    {"name": "Avast(Default)","ip": "8.26.56.26"},
+    {"name": "Bitdefender Box","ip": "104.16.248.249"},
+    {"name": "centuryLink DNS","ip": "4.2.2.1"},
+    {"name": "Cisco Umbrella","ip": "208.67.222.222"},
+    {"name": "CleanBrowsing","ip": "185.228.168.9"},
+    {"name": "Cloudflare Family","ip": "1.1.1.3"},
+    {"name": "Cloudflare Security","ip": "1.1.1.2"},
+    {"name": "ComSS","ip": "95.217.205.213"},
+    {"name": "Comodo Secure DNS","ip": "8.26.56.26"},
+    {"name": "Control D(Free)","ip": "76.76.2.0"},
+    {"name": "DNS Advantage","ip": "209.18.47.61"},
+    {"name": "DNS.WATCH","ip": "84.200.69.80"},
+    {"name": "DNS4EU Protective","ip": "86.54.11.1"},
+    {"name": "DNS4EU Unfiltered","ip": "86.54.11.100"},
+    {"name": "Dyn","ip": "216.146.35.35"},
+    {"name": "Dyn Standard DNS","ip": "216.146.35.35"},
+    {"name": "Fourth Estate","ip": "45.77.165.194"},
+    {"name": "FreeDNS","ip": "45.33.97.5"},
+    {"name": "FreenomWorld","ip": "80.80.80.80"},
+    {"name": "GreenTeamDNS","ip": "81.218.119.11"},
+    {"name": "Guifi.net","ip": "109.69.8.51"},
+    {"name": "Hurricane Elctric","ip": "74.82.42.42"},
+    {"name": "Mozilla DNS","ip": "104.16.248.249"},
+    {"name": "Mullvad DNS","ip": "194.242.2.2"},
+    {"name": "Neustar Recursive DNS","ip": "156.154.70.1"},
+    {"name": "Nord DNS","ip": "103.86.96.100"},
+    {"name": "Notron ConnectSafe","ip": "199.85.126.10"},
+    {"name": "OpenDNS","ip": "208.67.222.222"},
+    {"name": "OpenDNS Family","ip": "208.67.222.123"},
+    {"name": "OpenNIC","ip": "216.87.84.211"},
+    {"name": "Orange DNS","ip": "80.10.246.2"},
+    {"name": "Radar Game","ip": "10.202.10.10"},
+    {"name": "Safe DNS","ip": "195.46.39.39"},
+    {"name": "Shaw DNS","ip": "64.59.141.70"},
+    {"name": "SmartViper","ip": "208.76.50.50"},
+    {"name": "Tenta DNS","ip": "99.192.182.100"},
+    {"name": "UncesoredDNS","ip": "91.239.100.100"},
+    {"name": "Verising Public DNS","ip": "64.6.64.6"},
+    {"name": "Yandex DNS","ip": "77.88.8.8"},
+    {"name": "Yandex DNS Family","ip": "77.88.8.7"},
+    {"name": "Yandex DNS Safe","ip": "77.88.8.88"},
+    {"name": "ZeroDNS","ip": "199.195.254.10"},
+    {"name": "Electro",    "ip": "78.157.42.100"}
 ]
 
 HOSTS_FOR_TEST = [
@@ -974,4 +1018,5 @@ def main():
     input("Press Enter to exit...")
 
 if __name__ == "__main__":
+
     main()
