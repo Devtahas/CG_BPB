@@ -16,9 +16,10 @@ import urllib.parse
 import shutil
 import platform
 import sys
-# === کتابخانه های جدید برای ساخت لوکال هاست ===
-import webbrowser
-import http.server
+
+# === کتابخانه‌های رابط گرافیکی (Tkinter) ===
+import tkinter as tk
+from tkinter import messagebox
 
 # تلاش برای ایمپورت msvcrt برای تشخیص دکمه در ویندوز
 try:
@@ -40,7 +41,6 @@ DARK_GREY = Fore.LIGHTBLACK_EX
 # ==========================================
 
 WORKER_HOST = ""
-
 WS_PATH = ""
 USER_UUID = ""
 
@@ -81,17 +81,61 @@ STANDARD_DNS = [
 
 # دی‌ان‌اس‌های عظیم برای حالت Hope Mode
 HOPE_DNS = STANDARD_DNS + [
-    {"name": "NextDNS",    "ip": "45.90.28.0"},
-    {"name": "OpenDNS",    "ip": "208.67.222.222"},
+    {"name": "Cloudflare", "ip": "1.1.1.1"},
+    {"name": "Google",     "ip": "8.8.8.8"},
+    {"name": "Quad9",      "ip": "9.9.9.9"},
+    {"name": "3DNS",       "ip": "77.77.77.77"},
+    {"name": "Shecan1",    "ip": "178.22.122.100"},
+    {"name": "Shecan2",    "ip": "185.51.200.2"},
+    {"name": "x",          "ip": "94.140.15.15"},
+    {"name": "AS20860 DNS","ip": "87.117.202.100"},
     {"name": "AdGuard",    "ip": "94.140.14.14"},
-    {"name": "Yandex",     "ip": "77.88.8.8"},
-    {"name": "RadarGame",  "ip": "10.202.10.10"},
-    {"name": "403.online", "ip": "10.202.10.202"},
-    {"name": "Begzar",     "ip": "185.55.226.26"},
-    {"name": "HostIran",   "ip": "172.29.0.100"},
-    {"name": "CleanBrows", "ip": "185.228.168.9"},
-    {"name": "Level3",     "ip": "4.2.2.4"},
-    {"name": "Verisign",   "ip": "64.6.64.6"}
+    {"name": "Adguard Unfiltered","ip": "94.140.14.140"},
+    {"name": "AliDNS",     "ip": "223.5.5.5"},
+    {"name": "Alternate DNS","ip": "198.101.242.73"},
+    {"name": "Avast(Default)","ip": "8.26.56.26"},
+    {"name": "Bitdefender Box","ip": "104.16.248.249"},
+    {"name": "centuryLink DNS","ip": "4.2.2.1"},
+    {"name": "Cisco Umbrella","ip": "208.67.222.222"},
+    {"name": "CleanBrowsing","ip": "185.228.168.9"},
+    {"name": "Cloudflare Family","ip": "1.1.1.3"},
+    {"name": "Cloudflare Security","ip": "1.1.1.2"},
+    {"name": "ComSS","ip": "95.217.205.213"},
+    {"name": "Comodo Secure DNS","ip": "8.26.56.26"},
+    {"name": "Control D(Free)","ip": "76.76.2.0"},
+    {"name": "DNS Advantage","ip": "209.18.47.61"},
+    {"name": "DNS.WATCH","ip": "84.200.69.80"},
+    {"name": "DNS4EU Protective","ip": "86.54.11.1"},
+    {"name": "DNS4EU Unfiltered","ip": "86.54.11.100"},
+    {"name": "Dyn","ip": "216.146.35.35"},
+    {"name": "Dyn Standard DNS","ip": "216.146.35.35"},
+    {"name": "Fourth Estate","ip": "45.77.165.194"},
+    {"name": "FreeDNS","ip": "45.33.97.5"},
+    {"name": "FreenomWorld","ip": "80.80.80.80"},
+    {"name": "GreenTeamDNS","ip": "81.218.119.11"},
+    {"name": "Guifi.net","ip": "109.69.8.51"},
+    {"name": "Hurricane Elctric","ip": "74.82.42.42"},
+    {"name": "Mozilla DNS","ip": "104.16.248.249"},
+    {"name": "Mullvad DNS","ip": "194.242.2.2"},
+    {"name": "Neustar Recursive DNS","ip": "156.154.70.1"},
+    {"name": "Nord DNS","ip": "103.86.96.100"},
+    {"name": "Notron ConnectSafe","ip": "199.85.126.10"},
+    {"name": "OpenDNS","ip": "208.67.222.222"},
+    {"name": "OpenDNS Family","ip": "208.67.222.123"},
+    {"name": "OpenNIC","ip": "216.87.84.211"},
+    {"name": "Orange DNS","ip": "80.10.246.2"},
+    {"name": "Radar Game","ip": "10.202.10.10"},
+    {"name": "Safe DNS","ip": "195.46.39.39"},
+    {"name": "Shaw DNS","ip": "64.59.141.70"},
+    {"name": "SmartViper","ip": "208.76.50.50"},
+    {"name": "Tenta DNS","ip": "99.192.182.100"},
+    {"name": "UncesoredDNS","ip": "91.239.100.100"},
+    {"name": "Verising Public DNS","ip": "64.6.64.6"},
+    {"name": "Yandex DNS","ip": "77.88.8.8"},
+    {"name": "Yandex DNS Family","ip": "77.88.8.7"},
+    {"name": "Yandex DNS Safe","ip": "77.88.8.88"},
+    {"name": "ZeroDNS","ip": "199.195.254.10"},
+    {"name": "Electro",    "ip": "78.157.42.100"}
 ]
 
 HOSTS_FOR_TEST = [
@@ -118,21 +162,18 @@ COMPLETED_TASKS_COUNT = 0
 
 
 # ==========================================
-#        LOCAL WEB SERVER & SAVING CONFIG
+#        GUI CONFIG HANDLER & SAVING
 # ==========================================
 
 def get_saved_config_path():
     system = platform.system().lower()
-    # پیدا کردن مسیر دسکتاپ (یا دانلودها در اندروید)
     if 'android' in system or os.path.exists('/storage/emulated/0/'):
         base_dir = "/storage/emulated/0/Download"
     elif system == 'windows':
         base_dir = os.path.join(os.path.expanduser("~"), "Desktop")
     else:
-        # مک و لینوکس
         base_dir = os.path.join(os.path.expanduser("~"), "Desktop")
     
-    # در صورتی که پوشه دسکتاپ به هر دلیلی پیدا نشد، در پوشه اصلی کاربر بسازد
     if not os.path.exists(base_dir):
         base_dir = os.path.expanduser("~")
         
@@ -158,7 +199,6 @@ def load_saved_config():
                     WS_PATH = data['WS_PATH']
                     WORKER_HOST = data['WORKER_HOST']
                     print(f"{Fore.GREEN}✅ Loaded saved configuration from: {config_path}")
-                    # آپدیت کردن هاست برای تست اسپید
                     HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
                     return True
         except Exception as e:
@@ -179,125 +219,113 @@ def save_config_to_disk():
         print(f"\n{Fore.GREEN}✅ Configuration saved successfully to: {config_path}")
         print(f"{Fore.YELLOW}💡 Note: To change settings in the future, simply delete the 'user_config.json' file.\n")
     except Exception as e:
-        print(f"{Fore.RED}⚠️ Failed to save configuration to disk: {e}")
+        print(f"{Fore.RED}⚠️ Failed to save configuration: {e}")
 
-class WebConfigHandler(http.server.BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        pass
+def manual_terminal_input():
+    """اگر سیستم قابلیت نمایش گرافیکی نداشت (مثل اندروید ترموکس)"""
+    global USER_UUID, WS_PATH, WORKER_HOST
+    print(f"\n{Fore.CYAN}--- ورود اطلاعات به صورت دستی ---")
+    USER_UUID = input(f"{Fore.YELLOW}» Enter UUID: {Fore.WHITE}").strip()
+    WS_PATH = input(f"{Fore.YELLOW}» Enter WS Path (e.g., /path): {Fore.WHITE}").strip()
+    WORKER_HOST = input(f"{Fore.YELLOW}» Enter Worker Host (e.g., app.workers.dev): {Fore.WHITE}").strip()
+    
+    save_config_to_disk()
+    HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
+    print(f"{Fore.GREEN}✅ Configuration Saved Successfully!\n")
 
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.end_headers()
+def get_user_configs_via_gui():
+    """نمایش پنجره گرافیکی برای دریافت تنظیمات اولیه"""
+    global USER_UUID, WS_PATH, WORKER_HOST
+
+    try:
+        # ساخت پنجره اصلی
+        root = tk.Tk()
+        root.title("تنظیمات اسکنر")
+        root.geometry("400x380")
+        root.configure(bg="#1e1e1e")
+        root.resizable(False, False)
+
+        # وسط‌چین کردن پنجره در مانیتور
+        window_width = 400
+        window_height = 380
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        center_x = int(screen_width/2 - window_width / 2)
+        center_y = int(screen_height/2 - window_height / 2)
+        root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+
+        # استایل‌ها
+        bg_color = "#1e1e1e"
+        fg_color = "#00bcd4"
+        text_color = "#e0e0e0"
+        entry_bg = "#2b2b2b"
         
-        html = f"""
-        <!DOCTYPE html>
-        <html lang="fa" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>تنظیمات اولیه اسکنر</title>
-            <style>
-                body {{
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background-color: #121212; color: #e0e0e0;
-                    display: flex; justify-content: center; align-items: center;
-                    height: 100vh; margin: 0; direction: ltr;
-                }}
-                .container {{
-                    background-color: #1e1e1e; padding: 30px;
-                    border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-                    width: 100%; max-width: 450px;
-                    border: 1px solid #333;
-                }}
-                h2 {{ text-align: center; color: #00bcd4; margin-top: 0; }}
-                label {{ display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 14px; }}
-                input {{
-                    width: 100%; padding: 10px; margin-top: 8px;
-                    background-color: #2b2b2b; border: 1px solid #444;
-                    color: #fff; border-radius: 5px; box-sizing: border-box;
-                    font-family: monospace; font-size: 13px;
-                }}
-                input:focus {{ outline: none; border-color: #00bcd4; }}
-                button {{
-                    width: 100%; padding: 12px; margin-top: 25px;
-                    background-color: #00bcd4; border: none;
-                    color: #000; font-weight: bold; font-size: 16px;
-                    border-radius: 5px; cursor: pointer; transition: 0.3s;
-                }}
-                button:hover {{ background-color: #008ba3; }}
-                .info {{ text-align: center; font-size: 12px; color: #777; margin-top: 15px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h2>⚙️ Scanner Setup</h2>
-                <form method="POST">
-                    <label>UUID:</label>
-                    <input type="text" name="uuid" value="{USER_UUID}" required>
-                    
-                    <label>WS Path:</label>
-                    <input type="text" name="path" value="{WS_PATH}" required>
-                    
-                    <label>Worker Host:</label>
-                    <input type="text" name="host" value="{WORKER_HOST}" required>
-                    
-                    <button type="submit">Save & Start Scanning</button>
-                </form>
-                <div class="info">After saving, return to your terminal.</div>
-            </div>
-        </body>
-        </html>
-        """
-        self.wfile.write(html.encode('utf-8'))
+        font_title = ("Segoe UI", 16, "bold")
+        font_label = ("Segoe UI", 10, "bold")
+        font_entry = ("Consolas", 10)
 
-    def do_POST(self):
-        global USER_UUID, WS_PATH, WORKER_HOST
-        
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length).decode('utf-8')
-        parsed_data = urllib.parse.parse_qs(post_data)
+        # عنوان
+        tk.Label(root, text="⚙️ Scanner Setup", bg=bg_color, fg=fg_color, font=font_title).pack(pady=20)
 
-        if 'uuid' in parsed_data: USER_UUID = parsed_data['uuid'][0].strip()
-        if 'path' in parsed_data: WS_PATH = parsed_data['path'][0].strip()
-        if 'host' in parsed_data: WORKER_HOST = parsed_data['host'][0].strip()
+        # فیلد UUID
+        tk.Label(root, text="UUID:", bg=bg_color, fg=text_color, font=font_label, anchor="w").pack(fill="x", padx=40)
+        entry_uuid = tk.Entry(root, bg=entry_bg, fg="#ffffff", font=font_entry, insertbackground="white", relief="flat")
+        entry_uuid.pack(fill="x", padx=40, pady=5, ipady=5)
+        entry_uuid.insert(0, USER_UUID)
 
-        # ذخیره در فایل برای دفعات بعد
-        save_config_to_disk()
-        
-        # آپدیت کردن هاست برای تست اسپید
-        HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
+        # فیلد Path
+        tk.Label(root, text="WS Path (e.g., /mypass):", bg=bg_color, fg=text_color, font=font_label, anchor="w").pack(fill="x", padx=40, pady=(10,0))
+        entry_path = tk.Entry(root, bg=entry_bg, fg="#ffffff", font=font_entry, insertbackground="white", relief="flat")
+        entry_path.pack(fill="x", padx=40, pady=5, ipady=5)
+        entry_path.insert(0, WS_PATH)
 
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.end_headers()
-        success_html = """
-        <!DOCTYPE html>
-        <html><head>
-        <style>body{background:#121212;color:#00ff00;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}</style>
-        </head><body>
-        <div><h2>✅ Saved Successfully!</h2><p>You can close this tab and return to the terminal.</p></div>
-        <script>setTimeout(() => window.close(), 3000);</script>
-        </body></html>
-        """
-        self.wfile.write(success_html.encode('utf-8'))
+        # فیلد Host
+        tk.Label(root, text="Worker Host:", bg=bg_color, fg=text_color, font=font_label, anchor="w").pack(fill="x", padx=40, pady=(10,0))
+        entry_host = tk.Entry(root, bg=entry_bg, fg="#ffffff", font=font_entry, insertbackground="white", relief="flat")
+        entry_host.pack(fill="x", padx=40, pady=5, ipady=5)
+        entry_host.insert(0, WORKER_HOST)
 
-        threading.Thread(target=self.server.shutdown, daemon=True).start()
+        # تابع دکمه ذخیره
+        def on_save():
+            global USER_UUID, WS_PATH, WORKER_HOST
+            
+            u = entry_uuid.get().strip()
+            p = entry_path.get().strip()
+            h = entry_host.get().strip()
 
-def get_user_configs_via_browser():
-    print(f"{Fore.CYAN}🌐 Starting local web server for configuration...")
-    
-    server = http.server.HTTPServer(('127.0.0.1', 0), WebConfigHandler)
-    port = server.server_address[1]
-    url = f"http://127.0.0.1:{port}"
-    
-    print(f"{Fore.YELLOW}🚀 Opening browser at: {url}")
-    print(f"{Fore.WHITE}Please fill in your configuration in the browser to continue...\n")
-    
-    webbrowser.open(url)
-    server.serve_forever()
-    
-    print(f"{Fore.GREEN}✅ Configuration Received successfully!\n")
+            if not u or not p or not h:
+                messagebox.showerror("خطا", "لطفاً تمام فیلدها را پر کنید!")
+                return
+
+            USER_UUID = u
+            WS_PATH = p
+            WORKER_HOST = h
+
+            save_config_to_disk()
+            HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
+            
+            # بستن پنجره و ادامه اجرای برنامه در ترمینال
+            root.destroy()
+
+        # کنترل بستن پنجره با دکمه ضربدر (X)
+        def on_closing():
+            if messagebox.askokcancel("خروج", "آیا مطمئن هستید که می‌خواهید خارج شوید؟ (برنامه بسته می‌شود)"):
+                root.destroy()
+                sys.exit() # پایان کامل برنامه
+
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+
+        # دکمه
+        save_btn = tk.Button(root, text="Save & Start Scanning", bg="#00bcd4", fg="#000000", font=("Segoe UI", 11, "bold"), relief="flat", cursor="hand2", command=on_save)
+        save_btn.pack(fill="x", padx=40, pady=25, ipady=5)
+
+        # نگه داشتن پنجره باز
+        root.mainloop()
+
+    except Exception as e:
+        # اگر کاربر در اندروید بود یا کلاً محیط گرافیکی لود نشد، اتوماتیک می‌رود روی حالت ترمینال
+        print(f"{Fore.YELLOW}⚠️ GUI not supported on this device. Switching to terminal input...{Style.RESET_ALL}")
+        manual_terminal_input()
 
 
 # ==========================================
@@ -955,12 +983,9 @@ def execute_scan(scan_ips, ports_list, dns_list, scan_label):
 # ==========================================
 
 def main():
-    print(f"\n{Back.BLUE}{Fore.WHITE}  MULTI-PORT CLOUDFLARE SCANNER (v6 - LIVE PROGRESS UI)  {Style.RESET_ALL}")
-    
-    # ---- بررسی ذخیره بودن اطلاعات روی دسکتاپ ----
+    # باز کردن رابط گرافیکی (یا ترمینال) در صورتی که کانفیگ وجود نداشته باشد
     if not load_saved_config():
-        # در صورت نبود فایل ذخیره شده، لوکال هاست برای گرفتن اطلاعات باز می شود
-        get_user_configs_via_browser()
+        get_user_configs_via_gui()
 
     # پاک کردن صفحه ترمینال برای شروع کار اسکنر
     os.system('cls' if os.name == 'nt' else 'clear')
