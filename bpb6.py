@@ -754,8 +754,6 @@ def create_config_file(data, index, alpn_str="", country_code="UNK"):
         security_type = "tls"
     else:
         security_type = "none"
-    if security_type == "none":
-        return None  # کلاً کانفیگ none را نادیده می‌گیرد و نمی‌سازد    
 
     stream_settings = {
         "network": "ws",
@@ -1184,4 +1182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
