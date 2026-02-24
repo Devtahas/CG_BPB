@@ -145,6 +145,9 @@ WORKER_HOST = "test.sajdgsh.workers.dev"
 WS_PATH = "/NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560"
 USER_UUID = "یک-UUID-رندوم-اینجا"
 ```
+اگه از نرم افزار استفاده میکیند خودکار یک صفحه باز میکند که میتوانید مقادیر رو داخل اون صفحه جایگذاری کنید بعدش روی دسکتاپ پوشه ساخته میشه که اطلاعات اونجا ذخیره میشن برای اجرای اسکنر . فقط بار اول نیازه که مقادیر رو وارد کنید و بار های دیگه خودش خودکار از اطلاعات ذخیره شده استفاده میکنه و مقادیر رو جایگذاری میکنه
+
+> ![نمونه کانفیگ](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(535).png)
 
 ---
 
