@@ -1,5 +1,3 @@
-# --- START OF FILE bpb6_full.py ---
-
 import socket
 import random
 import ipaddress
@@ -18,6 +16,9 @@ import urllib.parse
 import shutil
 import platform
 import sys
+# === کتابخانه های جدید برای ساخت لوکال هاست ===
+import webbrowser
+import http.server
 
 # تلاش برای ایمپورت msvcrt برای تشخیص دکمه در ویندوز
 try:
@@ -41,7 +42,6 @@ DARK_GREY = Fore.LIGHTBLACK_EX
 WORKER_HOST = ""
 
 WS_PATH = ""
-
 USER_UUID = ""
 
 # پورت‌های استاندارد کلودفلر
@@ -81,61 +81,17 @@ STANDARD_DNS = [
 
 # دی‌ان‌اس‌های عظیم برای حالت Hope Mode
 HOPE_DNS = STANDARD_DNS + [
-    {"name": "Cloudflare", "ip": "1.1.1.1"},
-    {"name": "Google",     "ip": "8.8.8.8"},
-    {"name": "Quad9",      "ip": "9.9.9.9"},
-    {"name": "3DNS",       "ip": "77.77.77.77"},
-    {"name": "Shecan1",    "ip": "178.22.122.100"},
-    {"name": "Shecan2",    "ip": "185.51.200.2"},
-    {"name": "x",          "ip": "94.140.15.15"},
-    {"name": "AS20860 DNS","ip": "87.117.202.100"},
+    {"name": "NextDNS",    "ip": "45.90.28.0"},
+    {"name": "OpenDNS",    "ip": "208.67.222.222"},
     {"name": "AdGuard",    "ip": "94.140.14.14"},
-    {"name": "Adguard Unfiltered","ip": "94.140.14.140"},
-    {"name": "AliDNS",     "ip": "223.5.5.5"},
-    {"name": "Alternate DNS","ip": "198.101.242.73"},
-    {"name": "Avast(Default)","ip": "8.26.56.26"},
-    {"name": "Bitdefender Box","ip": "104.16.248.249"},
-    {"name": "centuryLink DNS","ip": "4.2.2.1"},
-    {"name": "Cisco Umbrella","ip": "208.67.222.222"},
-    {"name": "CleanBrowsing","ip": "185.228.168.9"},
-    {"name": "Cloudflare Family","ip": "1.1.1.3"},
-    {"name": "Cloudflare Security","ip": "1.1.1.2"},
-    {"name": "ComSS","ip": "95.217.205.213"},
-    {"name": "Comodo Secure DNS","ip": "8.26.56.26"},
-    {"name": "Control D(Free)","ip": "76.76.2.0"},
-    {"name": "DNS Advantage","ip": "209.18.47.61"},
-    {"name": "DNS.WATCH","ip": "84.200.69.80"},
-    {"name": "DNS4EU Protective","ip": "86.54.11.1"},
-    {"name": "DNS4EU Unfiltered","ip": "86.54.11.100"},
-    {"name": "Dyn","ip": "216.146.35.35"},
-    {"name": "Dyn Standard DNS","ip": "216.146.35.35"},
-    {"name": "Fourth Estate","ip": "45.77.165.194"},
-    {"name": "FreeDNS","ip": "45.33.97.5"},
-    {"name": "FreenomWorld","ip": "80.80.80.80"},
-    {"name": "GreenTeamDNS","ip": "81.218.119.11"},
-    {"name": "Guifi.net","ip": "109.69.8.51"},
-    {"name": "Hurricane Elctric","ip": "74.82.42.42"},
-    {"name": "Mozilla DNS","ip": "104.16.248.249"},
-    {"name": "Mullvad DNS","ip": "194.242.2.2"},
-    {"name": "Neustar Recursive DNS","ip": "156.154.70.1"},
-    {"name": "Nord DNS","ip": "103.86.96.100"},
-    {"name": "Notron ConnectSafe","ip": "199.85.126.10"},
-    {"name": "OpenDNS","ip": "208.67.222.222"},
-    {"name": "OpenDNS Family","ip": "208.67.222.123"},
-    {"name": "OpenNIC","ip": "216.87.84.211"},
-    {"name": "Orange DNS","ip": "80.10.246.2"},
-    {"name": "Radar Game","ip": "10.202.10.10"},
-    {"name": "Safe DNS","ip": "195.46.39.39"},
-    {"name": "Shaw DNS","ip": "64.59.141.70"},
-    {"name": "SmartViper","ip": "208.76.50.50"},
-    {"name": "Tenta DNS","ip": "99.192.182.100"},
-    {"name": "UncesoredDNS","ip": "91.239.100.100"},
-    {"name": "Verising Public DNS","ip": "64.6.64.6"},
-    {"name": "Yandex DNS","ip": "77.88.8.8"},
-    {"name": "Yandex DNS Family","ip": "77.88.8.7"},
-    {"name": "Yandex DNS Safe","ip": "77.88.8.88"},
-    {"name": "ZeroDNS","ip": "199.195.254.10"},
-    {"name": "Electro",    "ip": "78.157.42.100"}
+    {"name": "Yandex",     "ip": "77.88.8.8"},
+    {"name": "RadarGame",  "ip": "10.202.10.10"},
+    {"name": "403.online", "ip": "10.202.10.202"},
+    {"name": "Begzar",     "ip": "185.55.226.26"},
+    {"name": "HostIran",   "ip": "172.29.0.100"},
+    {"name": "CleanBrows", "ip": "185.228.168.9"},
+    {"name": "Level3",     "ip": "4.2.2.4"},
+    {"name": "Verisign",   "ip": "64.6.64.6"}
 ]
 
 HOSTS_FOR_TEST = [
@@ -158,8 +114,191 @@ GLOBAL_FRAGMENT_SETTINGS = {
     "interval": "1"
 }
 
-# متغیرهای گلوبال برای مانیتورینگ زنده
 COMPLETED_TASKS_COUNT = 0
+
+
+# ==========================================
+#        LOCAL WEB SERVER & SAVING CONFIG
+# ==========================================
+
+def get_saved_config_path():
+    system = platform.system().lower()
+    # پیدا کردن مسیر دسکتاپ (یا دانلودها در اندروید)
+    if 'android' in system or os.path.exists('/storage/emulated/0/'):
+        base_dir = "/storage/emulated/0/Download"
+    elif system == 'windows':
+        base_dir = os.path.join(os.path.expanduser("~"), "Desktop")
+    else:
+        # مک و لینوکس
+        base_dir = os.path.join(os.path.expanduser("~"), "Desktop")
+    
+    # در صورتی که پوشه دسکتاپ به هر دلیلی پیدا نشد، در پوشه اصلی کاربر بسازد
+    if not os.path.exists(base_dir):
+        base_dir = os.path.expanduser("~")
+        
+    config_folder = os.path.join(base_dir, "Scanner_Settings")
+    if not os.path.exists(config_folder):
+        try:
+            os.makedirs(config_folder)
+        except Exception:
+            pass
+            
+    return os.path.join(config_folder, "user_config.json")
+
+def load_saved_config():
+    global WORKER_HOST, WS_PATH, USER_UUID
+    config_path = get_saved_config_path()
+    
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if data.get('USER_UUID') and data.get('WS_PATH') and data.get('WORKER_HOST'):
+                    USER_UUID = data['USER_UUID']
+                    WS_PATH = data['WS_PATH']
+                    WORKER_HOST = data['WORKER_HOST']
+                    print(f"{Fore.GREEN}✅ Loaded saved configuration from: {config_path}")
+                    # آپدیت کردن هاست برای تست اسپید
+                    HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
+                    return True
+        except Exception as e:
+            print(f"{Fore.RED}⚠️ Failed to read saved config file: {e}")
+            
+    return False
+
+def save_config_to_disk():
+    config_path = get_saved_config_path()
+    data = {
+        'USER_UUID': USER_UUID,
+        'WS_PATH': WS_PATH,
+        'WORKER_HOST': WORKER_HOST
+    }
+    try:
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+        print(f"\n{Fore.GREEN}✅ Configuration saved successfully to: {config_path}")
+        print(f"{Fore.YELLOW}💡 Note: To change settings in the future, simply delete the 'user_config.json' file.\n")
+    except Exception as e:
+        print(f"{Fore.RED}⚠️ Failed to save configuration to disk: {e}")
+
+class WebConfigHandler(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.end_headers()
+        
+        html = f"""
+        <!DOCTYPE html>
+        <html lang="fa" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>تنظیمات اولیه اسکنر</title>
+            <style>
+                body {{
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background-color: #121212; color: #e0e0e0;
+                    display: flex; justify-content: center; align-items: center;
+                    height: 100vh; margin: 0; direction: ltr;
+                }}
+                .container {{
+                    background-color: #1e1e1e; padding: 30px;
+                    border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                    width: 100%; max-width: 450px;
+                    border: 1px solid #333;
+                }}
+                h2 {{ text-align: center; color: #00bcd4; margin-top: 0; }}
+                label {{ display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 14px; }}
+                input {{
+                    width: 100%; padding: 10px; margin-top: 8px;
+                    background-color: #2b2b2b; border: 1px solid #444;
+                    color: #fff; border-radius: 5px; box-sizing: border-box;
+                    font-family: monospace; font-size: 13px;
+                }}
+                input:focus {{ outline: none; border-color: #00bcd4; }}
+                button {{
+                    width: 100%; padding: 12px; margin-top: 25px;
+                    background-color: #00bcd4; border: none;
+                    color: #000; font-weight: bold; font-size: 16px;
+                    border-radius: 5px; cursor: pointer; transition: 0.3s;
+                }}
+                button:hover {{ background-color: #008ba3; }}
+                .info {{ text-align: center; font-size: 12px; color: #777; margin-top: 15px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>⚙️ Scanner Setup</h2>
+                <form method="POST">
+                    <label>UUID:</label>
+                    <input type="text" name="uuid" value="{USER_UUID}" required>
+                    
+                    <label>WS Path:</label>
+                    <input type="text" name="path" value="{WS_PATH}" required>
+                    
+                    <label>Worker Host:</label>
+                    <input type="text" name="host" value="{WORKER_HOST}" required>
+                    
+                    <button type="submit">Save & Start Scanning</button>
+                </form>
+                <div class="info">After saving, return to your terminal.</div>
+            </div>
+        </body>
+        </html>
+        """
+        self.wfile.write(html.encode('utf-8'))
+
+    def do_POST(self):
+        global USER_UUID, WS_PATH, WORKER_HOST
+        
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length).decode('utf-8')
+        parsed_data = urllib.parse.parse_qs(post_data)
+
+        if 'uuid' in parsed_data: USER_UUID = parsed_data['uuid'][0].strip()
+        if 'path' in parsed_data: WS_PATH = parsed_data['path'][0].strip()
+        if 'host' in parsed_data: WORKER_HOST = parsed_data['host'][0].strip()
+
+        # ذخیره در فایل برای دفعات بعد
+        save_config_to_disk()
+        
+        # آپدیت کردن هاست برای تست اسپید
+        HOSTS_FOR_TEST[0]['header'] = WORKER_HOST
+
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.end_headers()
+        success_html = """
+        <!DOCTYPE html>
+        <html><head>
+        <style>body{background:#121212;color:#00ff00;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}</style>
+        </head><body>
+        <div><h2>✅ Saved Successfully!</h2><p>You can close this tab and return to the terminal.</p></div>
+        <script>setTimeout(() => window.close(), 3000);</script>
+        </body></html>
+        """
+        self.wfile.write(success_html.encode('utf-8'))
+
+        threading.Thread(target=self.server.shutdown, daemon=True).start()
+
+def get_user_configs_via_browser():
+    print(f"{Fore.CYAN}🌐 Starting local web server for configuration...")
+    
+    server = http.server.HTTPServer(('127.0.0.1', 0), WebConfigHandler)
+    port = server.server_address[1]
+    url = f"http://127.0.0.1:{port}"
+    
+    print(f"{Fore.YELLOW}🚀 Opening browser at: {url}")
+    print(f"{Fore.WHITE}Please fill in your configuration in the browser to continue...\n")
+    
+    webbrowser.open(url)
+    server.serve_forever()
+    
+    print(f"{Fore.GREEN}✅ Configuration Received successfully!\n")
+
 
 # ==========================================
 #        PRECISE ISP DETECTION (IMPROVED)
@@ -211,7 +350,6 @@ def setup_directories(folder_name):
     system = platform.system().lower()
     base_dir = ""
 
-    # تشخیص سیستم عامل و مسیر ذخیره سازی
     if 'android' in system or os.path.exists('/storage/emulated/0/'):
         base_dir = "/storage/emulated/0/Download"
         if not os.path.exists(base_dir):
@@ -565,7 +703,6 @@ def save_and_print(text):
         
     clean_text = strip_ansi(text)
     with print_lock:
-        # پاک کردن خط انیمیشن زنده قبل از چاپ نتیجه یک آی‌پی
         sys.stdout.write(f"\r{' '*100}\r")
         sys.stdout.flush()
         
@@ -742,11 +879,9 @@ def display_live_progress(total_ips):
     spinners = ['|', '/', '-', '\\']
     idx = 0
     
-    # تا زمانی که اسکن متوقف نشده و همه تسک‌ها تمام نشده‌اند انیمیشن را پخش کن
     while not STOP_EVENT.is_set() and COMPLETED_TASKS_COUNT < total_ips:
         percentage = (COMPLETED_TASKS_COUNT / total_ips) * 100
         with print_lock:
-            # \r باعث می‌شود خط قبلی پاک و خط جدید روی همان نوشته شود
             progress_text = (
                 f"\r{Fore.CYAN}⚙️ Live Scan {spinners[idx]} "
                 f"{Fore.YELLOW}{percentage:.3f}% {DARK_GREY}| "
@@ -759,7 +894,6 @@ def display_live_progress(total_ips):
         idx = (idx + 1) % 4
         time.sleep(0.1)
     
-    # پاک کردن خط انیمیشن وقتی حلقه تمام شد
     with print_lock:
         sys.stdout.write(f"\r{' '*100}\r")
         sys.stdout.flush()
@@ -791,7 +925,6 @@ def execute_scan(scan_ips, ports_list, dns_list, scan_label):
 
     STOP_EVENT.clear()
     
-    # شروع نمایشگر زنده در پس‌زمینه
     progress_thread = threading.Thread(target=display_live_progress, args=(total_ips,), daemon=True)
     progress_thread.start()
 
@@ -813,10 +946,8 @@ def execute_scan(scan_ips, ports_list, dns_list, scan_label):
             except Exception:
                 pass
             finally:
-                # اضافه کردن به شمارشگر برای آپدیت درصد
                 COMPLETED_TASKS_COUNT += 1
 
-    # منتظر می‌مانیم تا نمایشگر درصد بسته شود
     progress_thread.join(timeout=1)
 
 # ==========================================
@@ -824,6 +955,16 @@ def execute_scan(scan_ips, ports_list, dns_list, scan_label):
 # ==========================================
 
 def main():
+    print(f"\n{Back.BLUE}{Fore.WHITE}  MULTI-PORT CLOUDFLARE SCANNER (v6 - LIVE PROGRESS UI)  {Style.RESET_ALL}")
+    
+    # ---- بررسی ذخیره بودن اطلاعات روی دسکتاپ ----
+    if not load_saved_config():
+        # در صورت نبود فایل ذخیره شده، لوکال هاست برای گرفتن اطلاعات باز می شود
+        get_user_configs_via_browser()
+
+    # پاک کردن صفحه ترمینال برای شروع کار اسکنر
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
     print(f"\n{Back.BLUE}{Fore.WHITE}  MULTI-PORT CLOUDFLARE SCANNER (v6 - LIVE PROGRESS UI)  {Style.RESET_ALL}")
     
     detect_isp_and_adjust_fragment()
@@ -890,14 +1031,11 @@ def main():
     except Exception:
         pass
 
-    # شروع نخ (Thread) مانیتور برای متوقف کردن با دکمه Enter
     stop_monitor_thread = threading.Thread(target=listen_for_stop, daemon=True)
     stop_monitor_thread.start()
 
-    # اجرای اسکن اصلی با UI زنده
     execute_scan(scan_ips, ports_to_use, dns_to_use, scan_label)
 
-    # سیستم Fallback (تغییر مود خودکار در صورت پیدا نکردن آی‌پی)
     if choice in ['1', '2'] and len(BEST_PAIRS_FOUND) == 0 and not STOP_EVENT.is_set():
         print(f"\n\n{Back.RED}{Fore.WHITE} ⚠️ NO IPs FOUND ON STANDARD PORTS! {Style.RESET_ALL}")
         print(f"{Fore.YELLOW}🔄 Auto-Fallback Triggered: Initiating DEEP SCAN on Range(1-65535)...")
@@ -1018,5 +1156,4 @@ def main():
     input("Press Enter to exit...")
 
 if __name__ == "__main__":
-
     main()
