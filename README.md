@@ -2,6 +2,10 @@
 ![Release](https://img.shields.io/github/v/release/Devtahas/CG_BPB)
 ![License](https://img.shields.io/github/license/Devtahas/CG_BPB)
 
+جهت اطلاع از جدیدترین آپدیت‌های اسکنر، عضو کانال رسمی پروژه شوید.
+همچنین برای گزارش باگ‌ها و طرح سؤالات خود می‌توانید از طریق گروه پشتیبانی اقدام کنید.
+چنل ما : @DevTaha_project
+
 # 🚀 اسکنر چندپورته Cloudflare و تولید خودکار کانفیگ VLESS
 
 > ابزار پیشرفته و چندنخی برای شناسایی آی‌پی‌های سالم Cloudflare، تست پورت و کیفیت اتصال و تولید کانفیگ‌های VLESS آماده استفاده در کلاینت‌های Xray/Karing و ایجاد لینک سابسکریپشن.
