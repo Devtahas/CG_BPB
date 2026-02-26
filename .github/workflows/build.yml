@@ -3,14 +3,14 @@ name: Build and Release EXE
 on:
   push:
     tags:
-      - 'v*' # این اکشن فقط زمانی اجرا میشه که تگ ورژن جدید بزنی (مثلا v1.0.0)
+      - 'v*' # این اکشن فقط زمانی اجرا میشه که تگ ورژن جدید بزنی (مثلا v1.0.1)
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: windows-latest # ساخت روی سرور ویندوز برای خروجی exe
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Code
@@ -29,22 +29,18 @@ jobs:
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
-          # استفاده از --collect-all برای جلوگیری از کرش کردن گرافیک برنامه
-          pyinstaller --onefile --noconsole --collect-all customtkinter --name NetTools_Pro main.pyw
+          # اضافه کردن --collect-all pyzbar برای حل مشکل فایل‌های dll مربوط به QR Code
+          pyinstaller --onefile --noconsole --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         working-directory: ./maim
         run: |
-          # 1. کپی کردن پوشه xray به داخل پوشه dist (جایی که فایل exe ساخته شده)
           Copy-Item -Path .\xray -Destination .\dist\xray -Recurse
-          
-          # 2. زیپ کردن کل محتویات پوشه dist (شامل فایل exe و پوشه xray)
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          # حالا فایل ZIP که شامل همه چیز هست رو آپلود میکنیم
           files: maim/NetTools_Pro_Release.zip 
           generate_release_notes: true
         env:
