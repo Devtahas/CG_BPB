@@ -1,0 +1,5 @@
+customtkinter
+requests
+urllib3
+colorama
+speedtest-cli
