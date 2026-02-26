@@ -24,18 +24,21 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller requests colorama urllib3
+          # نصب مستقیم نیازمندی‌ها. customtkinter برای رابط گرافیکی ضروریه.
+          pip install pyinstaller customtkinter requests urllib3
 
       - name: Build EXE with PyInstaller
+        # با استفاده از working-directory به ربات میگیم اول برو داخل پوشه maim
+        working-directory: ./maim
         run: |
-          # اینجا فرض کردیم اسم فایل پایتون شما bpb6.py است.
-          # اگر اسمش چیز دیگه‌ایه، تو خط پایین به جای bpb6.py اسم فایلت رو بنویس.
-          pyinstaller --onefile --name CG_BPB bpb6.py 
+          # دستور ساخت. چون رابط گرافیکی داریم، از --noconsole استفاده میکنیم تا صفحه سیاه ترمینال باز نشه.
+          pyinstaller --onefile --noconsole --name NetTools_Pro main.pyw
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/CG_BPB.exe # فایلی که ربات ساخته رو آپلود میکنه
+          # چون ربات داخل پوشه maim فایل رو ساخته، مسیر خروجی هم تغییر میکنه
+          files: maim/dist/NetTools_Pro.exe 
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
