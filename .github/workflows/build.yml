@@ -29,8 +29,8 @@ jobs:
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
-          # اضافه کردن --collect-all pyzbar برای حل مشکل فایل‌های dll مربوط به QR Code
-          pyinstaller --onefile --noconsole --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
+          # تگ uac-admin اضافه شد تا تغییرات DNS Changer در ویندوز بدون مشکل اعمال شود
+          pyinstaller --onefile --noconsole --uac-admin --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         working-directory: ./maim
