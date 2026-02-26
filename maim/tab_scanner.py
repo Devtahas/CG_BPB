@@ -215,7 +215,7 @@ class ScannerFrame(ctk.CTkFrame):
 
         add_frame = ctk.CTkFrame(cidr_win, fg_color="transparent")
         add_frame.pack(pady=10, fill="x", padx=20)
-        self.entry_new_cidr = ctk.CTkEntry(add_frame, placeholder_text="e.g. 104.16.0.0/13", width=200)
+        self.entry_new_cidr = ctk.CTkEntry(add_frame, placeholder_text="IP or Range (1.1.1.1, 104.16/13)", width=220)
         self.entry_new_cidr.pack(side="left", padx=5)
         
         ctk.CTkButton(add_frame, text="Add", width=60, fg_color=CF_ORANGE, text_color="black", hover_color=CF_ORANGE_HOVER, command=self.add_cidr).pack(side="left")
@@ -230,18 +230,43 @@ class ScannerFrame(ctk.CTkFrame):
             ctk.CTkButton(row, text="❌", width=30, fg_color="transparent", text_color="#EF5350", hover_color="#3A1D1D", command=lambda cidr=c: self.remove_cidr(cidr)).pack(side="right")
 
     def add_cidr(self):
-        new_cidr = self.entry_new_cidr.get().strip()
-        try:
-            ipaddress.ip_network(new_cidr, strict=False)
-            if new_cidr not in self.custom_cidrs:
-                self.custom_cidrs.append(new_cidr)
-                self.save_config()
-                self.entry_new_cidr.delete(0, "end")
-                self.refresh_cidr_ui()
-            else:
-                messagebox.showwarning("Warning", "CIDR already exists!")
-        except Exception:
-            messagebox.showerror("Error", "Invalid CIDR format! Use Format: IP/Subnet (e.g. 104.16.0.0/13)")
+        input_text = self.entry_new_cidr.get().strip()
+        if not input_text:
+            return
+
+        # جدا کردن ورودی‌ها بر اساس کاما یا فاصله
+        raw_items = input_text.replace(',', ' ').split()
+        
+        added_count = 0
+        invalid_items = []
+        duplicate_items = []
+
+        for item in raw_items:
+            item = item.strip()
+            if not item: continue
+            
+            try:
+                # تابع ip_network هم تک آی‌پی (1.1.1.1) و هم رنج (1.1.1.0/24) را ساپورت می‌کند
+                ipaddress.ip_network(item, strict=False)
+                
+                if item not in self.custom_cidrs:
+                    self.custom_cidrs.append(item)
+                    added_count += 1
+                else:
+                    duplicate_items.append(item)
+            except ValueError:
+                invalid_items.append(item)
+
+        if added_count > 0:
+            self.save_config()
+            self.entry_new_cidr.delete(0, "end")
+            self.refresh_cidr_ui()
+            
+        # نمایش پیام هوشمند به کاربر
+        if invalid_items:
+            messagebox.showwarning("Warning", f"Added {added_count} items.\n\nInvalid format ignored:\n{', '.join(invalid_items)}")
+        elif duplicate_items and added_count == 0:
+            messagebox.showinfo("Info", "All entered IPs/Ranges already exist in the list.")
 
     def remove_cidr(self, cidr):
         if cidr in self.custom_cidrs:
@@ -700,11 +725,15 @@ class ScannerFrame(ctk.CTkFrame):
             for cidr in self.custom_cidrs:
                 try:
                     net = ipaddress.ip_network(cidr, strict=False)
-                    limit = min(samples_count, net.num_addresses)
-                    selected = set()
-                    while len(selected) < limit:
-                        selected.add(str(net[random.randint(0, net.num_addresses - 1)]))
-                    scan_ips.extend(list(selected))
+                    # اگر تک آی‌پی وارد شده باشد یا رنج آی‌پی کوچکتر از تعداد سمپل باشد
+                    if net.num_addresses <= samples_count:
+                        scan_ips.extend([str(ip) for ip in net])
+                    else:
+                        limit = samples_count
+                        selected = set()
+                        while len(selected) < limit:
+                            selected.add(str(net[random.randint(0, net.num_addresses - 1)]))
+                        scan_ips.extend(list(selected))
                 except Exception:
                     pass
 
