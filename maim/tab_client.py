@@ -29,16 +29,16 @@ try:
 except ImportError:
     HAS_QR_SCANNER = False
 
-from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK, DIRS
+# استفاده از DIRS که در مرحله قبل به config اضافه کردیم
+from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, DIRS
 
 class ClientFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(3, weight=1) # تغییر ایندکس ردیف به خاطر اضافه شدن فریم جدید
+        self.grid_rowconfigure(3, weight=1)
 
         self.configs_dir = DIRS["configs"]
-        os.makedirs(self.configs_dir, exist_ok=True)
         
         self.xray_process = None
         self.is_connected = False
@@ -55,6 +55,10 @@ class ClientFrame(ctk.CTkFrame):
         self.btn_ping_all = ctk.CTkButton(header_frame, text="⚡ Pings", width=60, fg_color="#F9A825", hover_color="#F57F17", text_color="black", font=ctk.CTkFont(weight="bold"), command=self.test_all_pings)
         self.btn_ping_all.pack(side="right", padx=5)
 
+        # دکمه جدید برای Sort By Ping
+        self.btn_sort = ctk.CTkButton(header_frame, text="🔽 Sort", width=60, fg_color="#00ACC1", hover_color="#006064", font=ctk.CTkFont(weight="bold"), command=self.sort_by_ping)
+        self.btn_sort.pack(side="right", padx=5)
+
         self.btn_sub = ctk.CTkButton(header_frame, text="🔗 Sub Link", width=80, fg_color="#8E24AA", hover_color="#6A1B9A", font=ctk.CTkFont(weight="bold"), command=self.import_sub_link)
         self.btn_sub.pack(side="right", padx=5)
 
@@ -65,29 +69,23 @@ class ClientFrame(ctk.CTkFrame):
         self.btn_paste.pack(side="right", padx=5)
 
         # ---------------- CONNECTION STATUS FRAME ----------------
-        # ---------------- CONNECTION STATUS FRAME ----------------
         self.status_frame = ctk.CTkFrame(self, fg_color=BG_PANEL, corner_radius=15)
         self.status_frame.grid(row=1, column=0, padx=40, pady=10, sticky="ew")
-        self.status_frame.grid_columnconfigure(1, weight=1) # ایجاد فضای خالی در وسط برای هل دادن دکمه‌ها به راست
+        self.status_frame.grid_columnconfigure(1, weight=1) 
 
-        # ردیف اول: وضعیت (سمت چپ)
         self.lbl_status = ctk.CTkLabel(self.status_frame, text="Status: Disconnected", font=ctk.CTkFont(size=16, weight="bold"), text_color="#EF5350")
         self.lbl_status.grid(row=0, column=0, padx=20, pady=(15, 5), sticky="w")
 
-        # ردیف دوم: مانیتورینگ ترافیک (سمت چپ - زیر وضعیت)
         self.lbl_traffic = ctk.CTkLabel(self.status_frame, text="⬇️ 0.0 KB/s   |   ⬆️ 0.0 KB/s", font=ctk.CTkFont(size=14, weight="bold"), text_color="#29B6F6")
         self.lbl_traffic.grid(row=1, column=0, columnspan=2, padx=20, pady=(0, 15), sticky="w")
 
-        # سوییچ TUN Mode (سمت راست - وسط‌چین بین دو ردیف)
         self.var_tun = ctk.BooleanVar(value=False)
         self.switch_tun = ctk.CTkSwitch(self.status_frame, text="TUN Mode", variable=self.var_tun, progress_color=CF_ORANGE, font=ctk.CTkFont(weight="bold"), command=self.on_tun_toggle)
         self.switch_tun.grid(row=0, column=2, rowspan=2, padx=15, sticky="e")
 
-        # دکمه اتصال (سمت راست - وسط‌چین بین دو ردیف)
         self.btn_connect = ctk.CTkButton(self.status_frame, text="▶ CONNECT", fg_color="#2E7D32", hover_color="#1B5E20", font=ctk.CTkFont(weight="bold", size=14), command=self.toggle_connection)
         self.btn_connect.grid(row=0, column=3, rowspan=2, padx=20, pady=15, sticky="e")
         
-
         # ---------------- IP & COUNTRY CHECKER FRAME ----------------
         self.ip_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.ip_frame.grid(row=2, column=0, padx=40, pady=0, sticky="ew")
@@ -104,9 +102,37 @@ class ClientFrame(ctk.CTkFrame):
         self.scroll_area.grid_columnconfigure(0, weight=1)
 
         self.selected_config_path = None
-        self.config_buttons = []
+        self.config_buttons =[]
 
         self.load_configs()
+
+    # ==========================================
+    # مرتب‌سازی کانفیگ‌ها بر اساس پینگ
+    # ==========================================
+    def sort_by_ping(self):
+        if not self.config_buttons: return
+        self.btn_sort.configure(state="disabled", text="⏳")
+        self.update()
+
+        def get_ping_val(item):
+            txt = item["lbl_ping"].cget("text")
+            try:
+                # اگر پینگ عدد بود برگرداند، وگرنه برای خطاهایی مثل Timeout عدد بزرگ می‌گذارد تا بروند آخر لیست
+                if "ms" in txt and "--" not in txt:
+                    return int(txt.replace(" ms", "").strip())
+                return 999999
+            except:
+                return 999999
+        
+        # مرتب کردن لیست داینامیک در پایتون
+        self.config_buttons.sort(key=get_ping_val)
+        
+        # حذف ظاهری فریم‌ها و چینش دوباره آنها از بالا به پایین بر اساس لیست مرتب شده
+        for item in self.config_buttons:
+            item["frame"].pack_forget()
+            item["frame"].pack(fill="x", padx=10, pady=5)
+            
+        self.after(200, lambda: self.btn_sort.configure(state="normal", text="🔽 Sort"))
 
     # ==========================================
     # بخش IP Checker و پرچم کشور
@@ -126,7 +152,6 @@ class ClientFrame(ctk.CTkFrame):
 
     def _check_ip_thread(self):
         try:
-            # استفاده از پروکسی ویندوز در صورت روشن بودن VPN (کتابخانه requests اتوماتیک آن را می‌خواند)
             resp = requests.get("http://ip-api.com/json/", timeout=5).json()
             ip = resp.get("query", "Unknown")
             isp = resp.get("isp", "Unknown")
@@ -149,7 +174,7 @@ class ClientFrame(ctk.CTkFrame):
         xray_exe = os.path.join(xray_dir, "xray.exe")
         
         if os.path.exists(xray_exe):
-            return True # فایل وجود دارد، ادامه اتصال
+            return True 
             
         ans = messagebox.askyesno("Missing Xray Core", "Xray-Core is required but not found.\nDo you want to download it automatically now? (approx 20MB)")
         if not ans:
@@ -157,19 +182,18 @@ class ClientFrame(ctk.CTkFrame):
 
         self.btn_connect.configure(state="disabled", text="⏳ DOWNLOADING XRAY...")
         threading.Thread(target=self._download_xray_thread, args=(xray_dir,), daemon=True).start()
-        return "DOWNLOADING" # متوقف کردن اتصال تا پایان دانلود
+        return "DOWNLOADING" 
 
     def _download_xray_thread(self, xray_dir):
         try:
             os.makedirs(xray_dir, exist_ok=True)
             self.after(0, lambda: self.lbl_status.configure(text="Fetching latest Xray release...", text_color=CF_ORANGE))
             
-            # پیدا کردن آخرین نسخه از گیت هاب
             api_url = "https://api.github.com/repos/XTLS/Xray-core/releases/latest"
             rel_info = requests.get(api_url, timeout=10).json()
             
             download_url = None
-            for asset in rel_info.get("assets", []):
+            for asset in rel_info.get("assets",[]):
                 if "windows-64.zip" in asset["name"]:
                     download_url = asset["browser_download_url"]
                     break
@@ -179,7 +203,6 @@ class ClientFrame(ctk.CTkFrame):
 
             self.after(0, lambda: self.lbl_status.configure(text="Downloading Xray core... Please wait", text_color=CF_ORANGE))
             
-            # دانلود و اکسترکت مستقیم در حافظه (بدون ساخت فایل زیپ اضافی)
             r = requests.get(download_url, stream=True, timeout=20)
             z = zipfile.ZipFile(io.BytesIO(r.content))
             z.extractall(xray_dir)
@@ -193,7 +216,7 @@ class ClientFrame(ctk.CTkFrame):
             self.after(0, lambda: self.btn_connect.configure(state="normal", text="▶ CONNECT"))
 
     # ==========================================
-    # مدیریت اتصال (اجرای Xray و ادغام TUN)
+    # مدیریت اتصال
     # ==========================================
     def toggle_connection(self):
         if not self.is_connected: self.start_connection()
@@ -208,31 +231,25 @@ class ClientFrame(ctk.CTkFrame):
         if getattr(sys, 'frozen', False): base_dir = os.path.dirname(sys.executable)
         else: base_dir = os.path.dirname(os.path.abspath(__file__))
             
-        # چک کردن وضعیت دانلود خودکار
         status = self.check_and_download_xray(base_dir)
         if status == "DOWNLOADING": return
         if not status: return
 
         xray_path = os.path.join(base_dir, "xray", "xray.exe")
         
-        # ویرایش و آماده‌سازی کانفیگ
         try:
             with open(self.selected_config_path, 'r', encoding='utf-8') as f: config_data = json.load(f)
             
-            # اطمینان از وجود تگ proxy برای روتینگ
             if 'tag' not in config_data['outbounds'][0]:
                 config_data['outbounds'][0]['tag'] = "proxy"
             
-            # حذف Inbound های قدیمی (Socks/HTTP/TUN) برای جایگذاری جدید
-            config_data['inbounds'] = [ib for ib in config_data.get('inbounds', []) if ib.get('protocol') not in ["socks", "http", "tun"]]
+            config_data['inbounds'] =[ib for ib in config_data.get('inbounds', []) if ib.get('protocol') not in ["socks", "http", "tun"]]
             
-            # ساخت Inbound های پایه (Socks و HTTP)
             config_data['inbounds'].extend([
                 {"listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"auth": "noauth", "udp": True}, "sniffing": {"destOverride":["http", "tls"], "enabled": True}},
                 {"listen": "127.0.0.1", "port": 10809, "protocol": "http", "settings": {"allowTransparent": False}, "sniffing": {"destOverride": ["http", "tls"], "enabled": True}}
             ])
 
-            # اگر حالت TUN روشن باشد، Inbound مخصوص کارت شبکه مجازی را اضافه می‌کنیم
             is_tun_enabled = self.var_tun.get()
             if is_tun_enabled:
                 config_data['inbounds'].append({
@@ -253,7 +270,6 @@ class ClientFrame(ctk.CTkFrame):
             messagebox.showerror("Config Error", f"Failed to patch config:\n{str(e)}")
             return
 
-        # اجرای هسته
         try:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -269,12 +285,11 @@ class ClientFrame(ctk.CTkFrame):
                 self.xray_process = None
                 return
 
-            # تنظیم پروکسی ویندوز فقط در حالتی که TUN خاموش باشد
             if not is_tun_enabled:
                 self.set_windows_proxy(enable=True, server="127.0.0.1:10809")
                 status_msg = "Connected (System Proxy Routed)"
             else:
-                self.set_windows_proxy(enable=False) # اطمینان از خاموش بودن پروکسی
+                self.set_windows_proxy(enable=False)
                 status_msg = "Connected (TUN Global Mode)"
 
             self.is_connected = True
@@ -298,9 +313,6 @@ class ClientFrame(ctk.CTkFrame):
         self.btn_connect.configure(text="▶ CONNECT", fg_color="#2E7D32", hover_color="#1B5E20")
         self.lbl_traffic.configure(text="⬇️ 0.0 KB/s   |   ⬆️ 0.0 KB/s")
 
-    # ==========================================
-    # مانیتورینگ ترافیک (بدون تغییر)
-    # ==========================================
     def _traffic_monitor(self):
         if not HAS_PSUTIL: return
         last_io = psutil.net_io_counters()
@@ -314,9 +326,6 @@ class ClientFrame(ctk.CTkFrame):
             ul_str = f"{ul_speed:.1f} KB/s" if ul_speed < 1024 else f"{ul_speed/1024:.2f} MB/s"
             self.after(0, lambda d=dl_str, u=ul_str: self.lbl_traffic.configure(text=f"⬇️ {d}   |   ⬆️ {u}"))
 
-    # ==========================================
-    # تنظیمات پروکسی ویندوز (بدون تغییر)
-    # ==========================================
     def set_windows_proxy(self, enable=True, server="127.0.0.1:10809"):
         try:
             internet_settings = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Internet Settings', 0, winreg.KEY_ALL_ACCESS)
@@ -335,9 +344,6 @@ class ClientFrame(ctk.CTkFrame):
     def on_closing(self):
         self.stop_connection()
 
-    # ==========================================
-    # توابع Sub Link، QR و ساخت لیست دکمه‌ها (بدون تغییر)
-    # ==========================================
     def import_sub_link(self):
         dialog = ctk.CTkInputDialog(text="Paste your Subscription URL here:", title="Import Subscription")
         url = dialog.get_input()
@@ -355,7 +361,7 @@ class ClientFrame(ctk.CTkFrame):
             try: decoded_data = base64.b64decode(content).decode('utf-8')
             except Exception: decoded_data = content 
 
-            lines =[line.strip() for line in decoded_data.splitlines() if line.strip()]
+            lines = [line.strip() for line in decoded_data.splitlines() if line.strip()]
             imported_count = 0
             for line in lines:
                 if line.startswith("vless://"):
@@ -385,6 +391,9 @@ class ClientFrame(ctk.CTkFrame):
             futures = [executor.submit(self.ping_single_config, item["path"], item["lbl_ping"]) for item in self.config_buttons]
             concurrent.futures.wait(futures)
         self.after(0, lambda: self.btn_ping_all.configure(state="normal", text="⚡ Pings"))
+        
+        # بعد از اتمام پینگ‌ها، بصورت خودکار سورت شود تا کاربر راحت‌تر باشد
+        self.after(500, self.sort_by_ping)
 
     def ping_single_config(self, path, lbl_widget):
         self.after(0, lambda: lbl_widget.configure(text="...", text_color="gray"))
