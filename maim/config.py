@@ -1,5 +1,7 @@
 # config.py
 
+import os
+
 # === Cloudflare Theme Colors ===
 CF_ORANGE = "#F38020"
 CF_ORANGE_HOVER = "#D9680B"
@@ -27,3 +29,20 @@ CLOUDFLARE_CIDRS =[
 DEFAULT_DNS =[
     "1.1.1.1", "8.8.8.8", "9.9.9.9", "78.157.42.100", "178.22.122.100"
 ]
+
+# ==========================================
+# سیستم پوشه‌بندی مرکزی در دسکتاپ
+# ==========================================
+# یک پوشه تمیز روی دسکتاپ کاربر برای تمام اطلاعات نرم‌افزار ساخته می‌شود
+BASE_DIR = os.path.join(os.path.expanduser("~"), "Desktop", "NetTools_Data")
+
+# زیرپوشه‌های مرتب‌شده
+DIRS = {
+    "configs": os.path.join(BASE_DIR, "Configs"),
+    "subs": os.path.join(BASE_DIR, "Subscriptions"),
+    "settings": os.path.join(BASE_DIR, "Settings")
+}
+
+# ساخت خودکار پوشه‌ها در صورت عدم وجود در هنگام اجرای برنامه
+for d in DIRS.values():
+    os.makedirs(d, exist_ok=True)
