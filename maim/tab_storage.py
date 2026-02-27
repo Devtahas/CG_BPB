@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import os
 import subprocess
-from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL
+from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, DIRS, BASE_DIR
 
 class StorageFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -11,9 +11,9 @@ class StorageFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
 
-        self.target_dir = os.path.join(os.path.expanduser("~"), "Desktop", "NetTools_Results")
-        self.configs_dir = os.path.join(self.target_dir, "Configs")
-        self.subs_dir = os.path.join(self.target_dir, "Subscriptions")
+        self.target_dir = BASE_DIR
+        self.configs_dir = DIRS["configs"]
+        self.subs_dir = DIRS["subs"]
 
         # Title
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
