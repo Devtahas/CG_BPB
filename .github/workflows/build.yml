@@ -29,8 +29,8 @@ jobs:
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
-          # تگ uac-admin اضافه شد تا تغییرات DNS Changer در ویندوز بدون مشکل اعمال شود
-          pyinstaller --onefile --noconsole --uac-admin --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
+          # تگ --icon=icon.ico اضافه شد تا آیکون روی فایل EXE قرار بگیرد
+          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         working-directory: ./maim
