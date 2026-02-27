@@ -40,6 +40,7 @@ class ScannerFrame(ctk.CTkFrame):
         
         self.fragment_settings = {"packets": "1-1", "length": "100-200", "interval": "1"}
         
+        # استفاده از مسیرهای مرکزی
         self.target_dir = BASE_DIR
         self.configs_dir = DIRS["configs"]
         self.subs_dir = DIRS["subs"]
@@ -53,7 +54,6 @@ class ScannerFrame(ctk.CTkFrame):
         self.var_grpc = ctk.IntVar(value=0)
         self.var_tcp = ctk.IntVar(value=0)
         
-        # متغیر فعال/غیرفعال بودن فرگمنت
         self.var_frag_enable = ctk.IntVar(value=1)
 
         self.setup_ui()
@@ -129,7 +129,6 @@ class ScannerFrame(ctk.CTkFrame):
         frag_frame = ctk.CTkFrame(self, fg_color="transparent")
         frag_frame.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
         
-        # چک‌باکس فعال‌سازی فرگمنت
         self.chk_frag = ctk.CTkCheckBox(frag_frame, text="🧩 Enable Fragment", font=ctk.CTkFont(weight="bold"), variable=self.var_frag_enable, fg_color=CF_ORANGE, hover_color=CF_ORANGE_HOVER, command=self.toggle_frag_ui)
         self.chk_frag.pack(side="left", padx=(0, 10))
         
@@ -149,7 +148,6 @@ class ScannerFrame(ctk.CTkFrame):
         self.entry_frag_interval = ctk.CTkEntry(frag_frame, width=60, placeholder_text="1")
         self.entry_frag_interval.pack(side="left", padx=2)
 
-        # اجرای اولیه برای آپدیت وضعیت ظاهری دکمه‌های فرگمنت
         self.toggle_frag_ui()
 
         # Action Buttons
@@ -177,13 +175,11 @@ class ScannerFrame(ctk.CTkFrame):
         mode = self.frag_mode.get()
 
         if not is_enabled:
-            # خاموش کردن همه
             self.seg_frag.configure(state="disabled")
             self.entry_frag_packets.configure(state="disabled", fg_color=BG_PANEL)
             self.entry_frag_length.configure(state="disabled", fg_color=BG_PANEL)
             self.entry_frag_interval.configure(state="disabled", fg_color=BG_PANEL)
         else:
-            # روشن کردن منوی نوع فرگمنت
             self.seg_frag.configure(state="normal")
             if mode == "Manual":
                 self.entry_frag_packets.configure(state="normal", fg_color="#121212")
@@ -197,9 +193,6 @@ class ScannerFrame(ctk.CTkFrame):
     def update_thread_lbl(self, val): self.lbl_threads.configure(text=f"Threads: {int(val)}")
     def update_ip_lbl(self, val): self.lbl_ips.configure(text=f"IPs per Range: {int(val)}")
 
-    # ==========================================
-    # IP RANGES (CIDRs) MANAGER
-    # ==========================================
     def open_cidr_manager(self):
         cidr_win = ctk.CTkToplevel(self)
         cidr_win.title("IP Ranges (CIDRs) Manager")
@@ -234,21 +227,16 @@ class ScannerFrame(ctk.CTkFrame):
         if not input_text:
             return
 
-        # جدا کردن ورودی‌ها بر اساس کاما یا فاصله
         raw_items = input_text.replace(',', ' ').split()
-        
         added_count = 0
         invalid_items = []
-        duplicate_items = []
+        duplicate_items =[]
 
         for item in raw_items:
             item = item.strip()
             if not item: continue
-            
             try:
-                # تابع ip_network هم تک آی‌پی (1.1.1.1) و هم رنج (1.1.1.0/24) را ساپورت می‌کند
                 ipaddress.ip_network(item, strict=False)
-                
                 if item not in self.custom_cidrs:
                     self.custom_cidrs.append(item)
                     added_count += 1
@@ -262,7 +250,6 @@ class ScannerFrame(ctk.CTkFrame):
             self.entry_new_cidr.delete(0, "end")
             self.refresh_cidr_ui()
             
-        # نمایش پیام هوشمند به کاربر
         if invalid_items:
             messagebox.showwarning("Warning", f"Added {added_count} items.\n\nInvalid format ignored:\n{', '.join(invalid_items)}")
         elif duplicate_items and added_count == 0:
@@ -279,9 +266,6 @@ class ScannerFrame(ctk.CTkFrame):
         self.save_config()
         self.refresh_cidr_ui()
 
-    # ==========================================
-    # DNS MANAGER
-    # ==========================================
     def open_dns_manager(self):
         dns_win = ctk.CTkToplevel(self)
         dns_win.title("DNS Manager")
@@ -345,9 +329,6 @@ class ScannerFrame(ctk.CTkFrame):
                     except: pass
         threading.Thread(target=runner, daemon=True).start()
 
-    # ==========================================
-    # PORTS & NETWORK PROTOCOLS MANAGER
-    # ==========================================
     def open_ports_manager(self):
         ports_win = ctk.CTkToplevel(self)
         ports_win.title("Ports & Network Types")
@@ -416,9 +397,6 @@ class ScannerFrame(ctk.CTkFrame):
         self.save_config()
         self.refresh_ports_ui()
 
-    # ==========================================
-    # CORE LOGIC 
-    # ==========================================
     def log(self, text):
         self.after(0, self._log_safe, text)
         
@@ -528,7 +506,6 @@ class ScannerFrame(ctk.CTkFrame):
         self.stop_event.set()
 
     def detect_isp_and_adjust_fragment(self):
-        # اگر فرگمنت خاموش باشد، نیازی به تشخیص و تنظیم آن نداریم
         if self.var_frag_enable.get() == 0:
             self.log("🧩 Fragment Option is Disabled.")
             return
@@ -542,14 +519,13 @@ class ScannerFrame(ctk.CTkFrame):
             self.log(f"🧩 Manual Fragment Applied: {self.fragment_settings}")
             return
 
-        # Auto Detect
         try:
             resp = requests.get("http://ip-api.com/json/", timeout=5).json()
             isp, org = resp.get("isp", "").lower(), resp.get("org", "").lower()
-            if any(kw in isp or kw in org for kw in['mci', 'hamrah']): 
+            if any(kw in isp or kw in org for kw in ['mci', 'hamrah']): 
                 self.fragment_settings = {"packets": "1-1", "length": "10-20", "interval": "5"}
                 self.log(f"📶 Auto Fragment (MCI): {self.fragment_settings}")
-            elif any(kw in isp or kw in org for kw in['mtn', 'irancell']): 
+            elif any(kw in isp or kw in org for kw in ['mtn', 'irancell']): 
                 self.fragment_settings = {"packets": "1-1", "length": "1-3", "interval": "10"}
                 self.log(f"📶 Auto Fragment (Irancell): {self.fragment_settings}")
             elif 'rightel' in isp: 
@@ -569,12 +545,12 @@ class ScannerFrame(ctk.CTkFrame):
             url = f"http://{ip}:{port}{path}"
             headers = {
                 "Host": self.entry_host.get(),
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "User-Agent": "Mozilla/5.0",
                 "Connection": "Upgrade",
                 "Upgrade": "websocket"
             }
             resp = requests.get(url, headers=headers, timeout=2, allow_redirects=False)
-            if resp.status_code == 101 or ("cloudflare" in resp.headers.get("Server", "").lower() and resp.status_code in[200, 400, 403, 404]):
+            if resp.status_code == 101 or ("cloudflare" in resp.headers.get("Server", "").lower() and resp.status_code in [200, 400, 403, 404]):
                 return True
         except: pass
         return False
@@ -591,7 +567,6 @@ class ScannerFrame(ctk.CTkFrame):
                     port = ports_to_check.pop()
                 except IndexError:
                     break
-                
                 try:
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.settimeout(1.0)
@@ -725,7 +700,6 @@ class ScannerFrame(ctk.CTkFrame):
             for cidr in self.custom_cidrs:
                 try:
                     net = ipaddress.ip_network(cidr, strict=False)
-                    # اگر تک آی‌پی وارد شده باشد یا رنج آی‌پی کوچکتر از تعداد سمپل باشد
                     if net.num_addresses <= samples_count:
                         scan_ips.extend([str(ip) for ip in net])
                     else:
@@ -738,7 +712,6 @@ class ScannerFrame(ctk.CTkFrame):
                     pass
 
         base_ports = self.custom_ports if self.scan_mode.get() == "Standard Ports" else ALL_PORTS
-        tls_cf_ports =[443, 2053, 2083, 2087, 2096, 8443]
         none_cf_ports =[80, 8080, 8880, 2052, 2082, 2095]
         filtered_ports =[]
         
@@ -789,8 +762,14 @@ class ScannerFrame(ctk.CTkFrame):
             self.show_summary_popup(0, 0)
             return
 
-        self.log(f"\n🌍 Processing Locations & Generating Configs for {len(self.best_pairs)} IPs...")
-        sorted_best = sorted(self.best_pairs, key=lambda x: x.get('dl', 0), reverse=True)
+        # ========================================================
+        # ویژگی جدید: مرتب‌سازی و انتخاب فقط 15 آی‌پی برتر 
+        # (جلوگیری از ساخت صدها کانفیگ و فریز شدن اپلیکیشن کلاینت)
+        # ========================================================
+        sorted_best = sorted(self.best_pairs, key=lambda x: (x.get('dl', 0), -x.get('ping', 9999)), reverse=True)
+        sorted_best = sorted_best[:15] # فقط 15 تا نگه داشته می‌شود
+
+        self.log(f"\n🌍 Filtering applied! Generating configs for the TOP {len(sorted_best)} best IPs...")
         ip_countries_map = self.get_countries_batch([d['ip'] for d in sorted_best])
         
         vless_links =[]
@@ -843,7 +822,6 @@ class ScannerFrame(ctk.CTkFrame):
                     elif net_type == "tcp":
                         net_params += f"&headerType=http&host={self.entry_host.get()}&path={urllib.parse.quote(path)}"
                     
-                    # اگر تیک فرگمنت خورده باشد، به لینک VLESS هم اضافه می‌شود
                     if self.var_frag_enable.get() == 1:
                         packet_val = self.fragment_settings['packets']
                         length_val = self.fragment_settings['length']
@@ -861,7 +839,7 @@ class ScannerFrame(ctk.CTkFrame):
                 f.write(base64.b64encode("\n".join(vless_links).encode()).decode())
         except: pass
 
-        self.log(f"\n🎉 ALL DONE! Generated {len(vless_links)} configs.")
+        self.log(f"\n🎉 ALL DONE! Generated {len(vless_links)} configs from top IPs.")
         self.after(0, lambda: (self.btn_start.configure(state="normal"), self.btn_stop.configure(state="disabled", text="⏹ STOP & GENERATE"), self.lbl_status.configure(text="Status: Finished & Saved!")))
         
         self.show_summary_popup(len(self.best_pairs), len(vless_links))
@@ -877,7 +855,6 @@ class ScannerFrame(ctk.CTkFrame):
             "sockopt": {"domainStrategy": "UseIP", "tcpFastOpen": True}
         }
         
-        # اگر تیک فرگمنت فعال باشد، به فایل JSON اضافه می‌شود
         if self.var_frag_enable.get() == 1:
             stream_settings["sockopt"]["fragment"] = self.fragment_settings
         
@@ -929,7 +906,7 @@ class ScannerFrame(ctk.CTkFrame):
             ctk.CTkLabel(popup, text="Success!", font=ctk.CTkFont(size=18, weight="bold"), text_color=CF_ORANGE).pack()
             
             ctk.CTkLabel(popup, text=f"Clean IPs Found: {ips_found}", font=ctk.CTkFont(size=14)).pack(pady=(10,2))
-            ctk.CTkLabel(popup, text=f"Configs Generated: {configs_generated}", font=ctk.CTkFont(size=14)).pack(pady=(2,10))
+            ctk.CTkLabel(popup, text=f"Configs Generated: {configs_generated} (Top 15 IPs)", font=ctk.CTkFont(size=14)).pack(pady=(2,10))
 
             ctk.CTkButton(popup, text="📂 Go to Storage", fg_color=CF_ORANGE, text_color="black", hover_color=CF_ORANGE_HOVER, font=ctk.CTkFont(weight="bold"), command=lambda: self.go_to_storage_from_popup(popup)).pack(pady=10)
 
