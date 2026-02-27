@@ -16,7 +16,7 @@ import shutil
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from config import STANDARD_PORTS, ALL_PORTS, CLOUDFLARE_CIDRS, CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, CF_API_URL, DEFAULT_DNS
+from config import STANDARD_PORTS, ALL_PORTS, CLOUDFLARE_CIDRS, CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, CF_API_URL, DEFAULT_DNS, DIRS, BASE_DIR
 
 TEST_DL_LIMIT_KB = 50
 TEST_UL_SIZE_KB = 15
@@ -40,9 +40,9 @@ class ScannerFrame(ctk.CTkFrame):
         
         self.fragment_settings = {"packets": "1-1", "length": "100-200", "interval": "1"}
         
-        self.target_dir = os.path.join(os.path.expanduser("~"), "Desktop", "NetTools_Results")
-        self.configs_dir = os.path.join(self.target_dir, "Configs")
-        self.subs_dir = os.path.join(self.target_dir, "Subscriptions")
+        self.target_dir = BASE_DIR
+        self.configs_dir = DIRS["configs"]
+        self.subs_dir = DIRS["subs"]
 
         self.var_tls = ctk.IntVar(value=1)
         self.var_none = ctk.IntVar(value=1)
@@ -427,7 +427,7 @@ class ScannerFrame(ctk.CTkFrame):
         self.log_box.see("end")
 
     def load_config(self):
-        path = os.path.join(os.path.expanduser("~"), "Desktop", "Scanner_Config.json")
+        path = os.path.join(DIRS["settings"], "Scanner_Config.json")
         if os.path.exists(path):
             try:
                 with open(path, 'r') as f:
@@ -464,7 +464,7 @@ class ScannerFrame(ctk.CTkFrame):
         self.toggle_frag_ui()
 
     def save_config(self):
-        path = os.path.join(os.path.expanduser("~"), "Desktop", "Scanner_Config.json")
+        path = os.path.join(DIRS["settings"], "Scanner_Config.json")
         data = {
             'UUID': self.entry_uuid.get(), 
             'PATH': self.entry_path.get(), 
