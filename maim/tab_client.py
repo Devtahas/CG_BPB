@@ -29,7 +29,7 @@ try:
 except ImportError:
     HAS_QR_SCANNER = False
 
-from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL
+from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK, DIRS
 
 class ClientFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -37,7 +37,7 @@ class ClientFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1) # تغییر ایندکس ردیف به خاطر اضافه شدن فریم جدید
 
-        self.configs_dir = os.path.join(os.path.expanduser("~"), "Desktop", "NetTools_Results", "Configs")
+        self.configs_dir = DIRS["configs"]
         os.makedirs(self.configs_dir, exist_ok=True)
         
         self.xray_process = None
