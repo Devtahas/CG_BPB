@@ -20,7 +20,8 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK
+# اضافه شدن DIRS به لیست ایمپورت‌ها
+from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK, DIRS
 
 # ترکیب لیست DNSهای کلاسیک (IPv4) و امن (DoH)
 DEFAULT_DNS_LIST =[
@@ -104,7 +105,9 @@ class DNSChangerFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.dns_file = os.path.join(os.path.expanduser("~"), "Desktop", "NetTools_DNS.json")
+        # تغییر مسیر فایل تنظیمات DNS به پوشه مرکزی Settings
+        self.dns_file = os.path.join(DIRS["settings"], "NetTools_DNS.json")
+        
         self.dns_list = self.load_dns_list()
         self.is_connected = False
         self.doh_server_instance = None
@@ -358,9 +361,9 @@ class DNSChangerFrame(ctk.CTkFrame):
             messagebox.showwarning("Warning", "Cannot delete the last DNS in the list!")
             return
         if messagebox.askyesno("Delete", f"Are you sure you want to delete '{choice}'?"):
-            self.dns_list = [d for d in self.dns_list if d["name"] != choice]
+            self.dns_list =[d for d in self.dns_list if d["name"] != choice]
             self.save_dns_list()
-            new_values = [d["name"] for d in self.dns_list]
+            new_values =[d["name"] for d in self.dns_list]
             self.combo_dns.configure(values=new_values)
             self.combo_dns.set(new_values[0])
             self.on_dns_select(new_values[0])
