@@ -24,13 +24,14 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar
+          # کلمه pystray در انتهای این خط اضافه شد
+          pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
 
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
           # تگ --icon=icon.ico اضافه شد تا آیکون روی فایل EXE قرار بگیرد
-          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --collect-all customtkinter --collect-all pyzbar --name NetTools_Pro main.pyw
+          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         working-directory: ./maim
