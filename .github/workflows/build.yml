@@ -24,19 +24,21 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          # کلمه pystray در انتهای این خط اضافه شد
           pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
 
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
-          # تگ --icon=icon.ico اضافه شد تا آیکون روی فایل EXE قرار بگیرد
-          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
+          # تغییر مهم: دستور --add-data "cores;cores" اضافه شد تا هسته‌های تور و سایفون درون EXE جاگذاری شوند
+          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         working-directory: ./maim
         run: |
-          Copy-Item -Path .\xray -Destination .\dist\xray -Recurse
+          # تغییر مهم: بررسی می‌کنیم اگر پوشه xray در گیت‌هاب وجود داشت، آن را کنار فایل EXE کپی کند
+          if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
+          
+          # فایل نهایی به همراه تمام محتویات را زیپ می‌کنیم
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
 
       - name: Upload Release Asset
