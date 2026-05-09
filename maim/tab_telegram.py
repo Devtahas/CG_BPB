@@ -6,10 +6,6 @@ import socket
 import time
 import random
 import concurrent.futures
-import urllib3
-
-# غیرفعال کردن اخطارهای SSL برای جلوگیری از خطاهای فیلترینگ
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL
 
@@ -63,8 +59,8 @@ class TelegramFrame(ctk.CTkFrame):
         headers = {"User-Agent": "Mozilla/5.0"}
         
         try:
-            # 1. تلاش برای گرفتن دیتا از سرور رندر (استفاده از verify=False برای دور زدن خطای SSL مخابرات)
-            resp = requests.get(f"{RENDER_API_URL}?channel={channel_id}", headers=headers, timeout=40, verify=False)
+            # 1. تلاش برای گرفتن دیتا از سرور رندر
+            resp = requests.get(f"{RENDER_API_URL}?channel={channel_id}", headers=headers, timeout=40)
             
             if resp.status_code == 200:
                 try:
@@ -94,7 +90,7 @@ class TelegramFrame(ctk.CTkFrame):
             success = False
             for fb_url in fallback_urls:
                 try:
-                    fb_resp = requests.get(fb_url, headers=headers, timeout=15, verify=False)
+                    fb_resp = requests.get(fb_url, headers=headers, timeout=15)
                     if fb_resp.status_code == 200:
                         all_proxies = fb_resp.json() # اگر JSON نباشد به Except میپرد و میرور بعدی را تست میکند
                         random.shuffle(all_proxies)
