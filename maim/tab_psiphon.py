@@ -8,6 +8,12 @@ import time
 import ctypes
 from config import CF_ORANGE, BG_PANEL
 
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 def get_core_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
@@ -110,8 +116,38 @@ class PsiphonFrame(ctk.CTkFrame):
             self.after(0, lambda: self.lbl_status.configure(text="Status: Connected & Hidden", text_color="#66BB6A"))
             self.after(0, lambda: self.btn_connect.configure(text="⏹ DISCONNECT", fg_color="#C62828", hover_color="#8E0000", state="normal"))
 
+    def _terminate_psiphon_process(self):
+        """خاتمه ایمن فرایند سایفون با اولویت psutil"""
+        if not self.psiphon_process:
+            return
+
+        pid = self.psiphon_process.pid
+        if HAS_PSUTIL:
+            try:
+                proc = psutil.Process(pid)
+                proc.terminate()  # درخواست مودبانه
+                proc.wait(timeout=3)  # ۳ ثانیه صبر کن
+                return
+            except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                try:
+                    proc.kill()  # در غیر این صورت اجباری
+                    proc.wait(timeout=2)
+                except:
+                    pass
+            except Exception:
+                pass
+        else:
+            # Fallback به taskkill (بدون /F اول)
+            try:
+                subprocess.run(["taskkill", "/PID", str(pid)], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                time.sleep(2)
+                # اگر هنوز زنده بود، /F
+                subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            except Exception:
+                pass
+
     def stop_psiphon(self):
-        # برای بستن سایفون بدون به هم ریختن سیستم پروکسی، باید درخواست بسته شدن پنجره را به آن بفرستیم
+        # ابتدا تلاش برای بستن محترمانه با WM_CLOSE
         EnumWindows = ctypes.windll.user32.EnumWindows
         EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
         GetWindowText = ctypes.windll.user32.GetWindowTextW
@@ -124,14 +160,14 @@ class PsiphonFrame(ctk.CTkFrame):
                 buff = ctypes.create_unicode_buffer(length + 1)
                 GetWindowText(hwnd, buff, length + 1)
                 if "Psiphon" in buff.value:
-                    PostMessage(hwnd, 0x0010, 0, 0) # کد 0x0010 یعنی دستور WM_CLOSE به پنجره
+                    PostMessage(hwnd, 0x0010, 0, 0) # WM_CLOSE
             return True
             
         EnumWindows(EnumWindowsProc(foreach_window), 0)
         
-        # محکم کاری: اگر بعد از 1.5 ثانیه بسته نشد، اجباری میبندیمش
+        # صبر کوتاه و سپس اقدام به terminate ایمن
         time.sleep(1.5)
-        os.system("taskkill /f /im psiphon3.exe >nul 2>&1")
+        self._terminate_psiphon_process()
         
         if self.psiphon_process:
             self.psiphon_process = None
@@ -140,5 +176,6 @@ class PsiphonFrame(ctk.CTkFrame):
         self.progressbar.set(0)
         self.lbl_status.configure(text="Status: Disconnected", text_color="#EF5350")
         self.btn_connect.configure(text="▶ LAUNCH PSIPHON", fg_color="#2E7D32", hover_color="#1B5E20")
+        
     def stop_connection(self):
          self.stop_psiphon()
