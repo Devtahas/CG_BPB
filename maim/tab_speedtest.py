@@ -4,10 +4,7 @@ import threading
 import time
 import requests
 import os
-import urllib3
 from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class SpeedtestFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
