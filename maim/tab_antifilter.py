@@ -13,6 +13,12 @@ import winreg
 
 from config import CF_ORANGE, BG_PANEL, DIRS
 
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 def get_core_path(relative_path):
     if hasattr(sys, '_MEIPASS'): return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
@@ -31,6 +37,37 @@ MASSIVE_DNS_LIST = [
     "209.244.0.4", "64.6.64.6", "64.6.65.6", "84.200.69.80", "84.200.70.40",
     "1.1.1.3", "1.0.0.3", "114.114.114.114", "223.5.5.5", "180.76.76.76"
 ]
+
+def _terminate_process_by_name(name):
+    """تلاش برای بستن ایمن فرایند با نام مشخص (بدون taskkill /F)"""
+    if HAS_PSUTIL:
+        try:
+            for proc in psutil.process_iter(['pid', 'name']):
+                if proc.info['name'] and proc.info['name'].lower() == name.lower():
+                    try:
+                        proc.terminate()
+                    except:
+                        pass
+            # کمی صبر
+            time.sleep(1)
+            # بررسی اینکه آیا هنوز وجود دارد
+            for proc in psutil.process_iter(['pid', 'name']):
+                if proc.info['name'] and proc.info['name'].lower() == name.lower():
+                    try:
+                        proc.kill()
+                    except:
+                        pass
+        except Exception:
+            pass
+    else:
+        # Fallback با taskkill (بدون اجباری)
+        try:
+            subprocess.run(['taskkill', '/im', name], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            time.sleep(2)
+            # اگر هنوز زنده بود، /F
+            subprocess.run(['taskkill', '/F', '/im', name], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        except Exception:
+            pass
 
 class AntiFilterFrame(ctk.CTkFrame):
     # دریافت app_controller برای سوئیچ کردن تب ها
@@ -118,6 +155,20 @@ class AntiFilterFrame(ctk.CTkFrame):
             internet_set_option(0, 37, 0, 0)
             internet_set_option(0, 39, 0, 0)
         except Exception: pass
+
+    def _is_proxy_enabled(self):
+        """بررسی می‌کند که آیا پروکسی سیستم توسط سایفون یا تور فعال شده است یا خیر"""
+        try:
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Internet Settings', 0, winreg.KEY_READ)
+            enabled, _ = winreg.QueryValueEx(key, 'ProxyEnable')
+            if enabled:
+                server, _ = winreg.QueryValueEx(key, 'ProxyServer')
+                if server and ('127.0.0.1' in server or 'localhost' in server):
+                    return True
+            winreg.CloseKey(key)
+        except:
+            pass
+        return False
 
     def toggle_mode(self):
         if not is_admin():
@@ -259,28 +310,43 @@ class AntiFilterFrame(ctk.CTkFrame):
 
     def _run_psiphon(self):
         psi_exe = get_core_path(os.path.join("cores", "psiphon", "psiphon3.exe"))
+        if not os.path.exists(psi_exe):
+            self.log("❌ psiphon3.exe not found.", "#EF5350")
+            return False
         try:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             self.current_process = subprocess.Popen([psi_exe], creationflags=subprocess.CREATE_NO_WINDOW, startupinfo=startupinfo)
+            
+            # مخفی کردن پنجره (مانند قبل)
             EnumWindows = ctypes.windll.user32.EnumWindows
             EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
             GetWindowText = ctypes.windll.user32.GetWindowTextW
+            GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
             ShowWindow = ctypes.windll.user32.ShowWindow
+
             def foreach_window(hwnd, lParam):
                 if ctypes.windll.user32.IsWindowVisible(hwnd):
-                    length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+                    length = GetWindowTextLength(hwnd)
                     if length > 0:
                         buff = ctypes.create_unicode_buffer(length + 1)
                         GetWindowText(hwnd, buff, length + 1)
                         if "Psiphon" in buff.value: ShowWindow(hwnd, 0)
                 return True
-            for _ in range(15):
-                if self.stop_event.is_set(): return False
+
+            # منتظر راه‌اندازی پروکسی توسط سایفون می‌مانیم (حداکثر ۳۰ ثانیه)
+            start = time.time()
+            while time.time() - start < 30:
+                if self.stop_event.is_set() or (self.current_process and self.current_process.poll() is not None):
+                    break
                 EnumWindows(EnumWindowsProc(foreach_window), 0)
-                time.sleep(1)
-            return True 
-        except: return False
+                if self._is_proxy_enabled():
+                    return True
+                time.sleep(2)
+            return False
+        except Exception as e:
+            self.log(f"Psiphon start error: {str(e)[:50]}", "#EF5350")
+            return False
 
     def _run_wireguard(self):
         awg_exe = get_core_path(os.path.join("cores", "wireguard", "amneziawg.exe"))
@@ -295,10 +361,16 @@ class AntiFilterFrame(ctk.CTkFrame):
         except: return False
 
     def _kill_process(self, proc, name):
+        """بستن ایمن فرایند (بدون taskkill /f مستقیم)"""
+        # ابتدا terminate روی پروسه مستقیم (اگر داریم)
         if proc:
-            try: proc.terminate()
-            except: pass
-        os.system(f"taskkill /f /im {name} >nul 2>&1")
+            try:
+                proc.terminate()
+                proc.wait(timeout=3)
+            except:
+                pass
+        # سپس با تابع کمکی تمام نمونه‌های آن نام را پاک می‌کنیم
+        _terminate_process_by_name(name)
         time.sleep(1)
 
     def stop_engine(self, switch_to_scanner=False):
