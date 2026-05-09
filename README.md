@@ -1,261 +1,201 @@
-![Build](https://github.com/Devtahas/CG_BPB/actions/workflows/build.yml/badge.svg)
-![Release](https://img.shields.io/github/v/release/Devtahas/CG_BPB)
+```markdown
+![NetTools Pro Banner](https://via.placeholder.com/1200x300?text=NetTools+Pro+Cloudflare+Edition)  
+*Replace with your own banner / screenshot*
+
+![Build](https://github.com/Devtahas/CG_BPB/actions/workflows/build.yml/badge.svg)  
+![Release](https://img.shields.io/github/v/release/Devtahas/CG_BPB)  
 ![License](https://img.shields.io/github/license/Devtahas/CG_BPB)
 
-جهت اطلاع از جدیدترین آپدیت‌های اسکنر، عضو کانال رسمی پروژه شوید.
-همچنین برای گزارش باگ‌ها و طرح سؤالات خود می‌توانید از طریق گروه پشتیبانی اقدام کنید.
-چنل ما : @DevTaha_project
-
-# 🚀 اسکنر چندپورته Cloudflare و تولید خودکار کانفیگ VLESS و اجرای آن ها!
-
-> ابزار پیشرفته و چندنخی برای شناسایی آی‌پی‌های سالم Cloudflare، تست پورت و کیفیت اتصال و تولید کانفیگ‌های VLESS آماده استفاده در کلاینت‌های Xray/Karing و ایجاد لینک سابسکریپشن.
+🌐 **Telegram Channel:** [@DevTaha_project](https://t.me/DevTaha_project)  
+🆘 **Support Group:** [@DevTaha_project](https://t.me/DevTaha_project)
 
 ---
 
-## 🌟 معرفی
+## 🌟 NetTools Pro — Cloudflare Edition
 
-این پروژه یک **اسکنر هوشمند Cloudflare** است که به‌صورت خودکار:
+> **A professional GUI application for network privacy, anti‑censorship, and connection optimisation.**  
+> *From Cloudflare IP scanning to VPN chains, WARP, Tor, DNS, and gaming acceleration — all in one place.*
 
-* آی‌پی‌های Cloudflare را نمونه‌برداری می‌کند
-* پورت‌های فعال را تشخیص می‌دهد
-* کیفیت اتصال (پینگ و سرعت) را می‌سنجد
-* بهترین ترکیب IP/DNS را انتخاب می‌کند
-* کانفیگ JSON بهینه و لینک سابسکریپشن base64 تولید می‌کند
-
-هدف پروژه، ساده‌سازی فرآیند پیدا کردن IP مناسب و ساخت کانفیگ بهینه برای کاربران حرفه‌ای و توسعه‌دهندگان است.
+NetTools Pro has evolved from a simple terminal scanner into a full‑featured desktop client, inspired by modern proxy managers like **Hiddify**. It gives you complete control over your internet traffic, whether you want to bypass deep packet inspection, chain several VPN layers, or simply find the fastest Cloudflare endpoint.
 
 ---
 
-## ✨ ویژگی‌ها
+## 🚀 Key Features
 
-* ⚡ **اسکن سریع و چندتردی**
-* 🎯 **تشخیص خودکار پورت فعال**
-* 🤝 **بررسی هندشیک Cloudflare**
-* 📶 **پینگ دو مرحله‌ای برای دقت بالا**
-* 🚀 **تست سرعت دانلود و آپلود واقعی**
-* 🧠 **انتخاب هوشمند بهترین IP و DNS**
-* 🔒 **تشخیص خودکار TLS و Non-TLS**
-* 🧪 **بهینه‌سازی Fragment برای پایداری بهتر**
-* 📦 **تولید کانفیگ JSON آماده استفاده**
-* 🔗 **ساخت لینک سابسکریپشن base64**
-* 🧩 **پشتیبانی از چند DNS**
-* ⛔ **امکان توقف فوری اسکن (Ctrl + M)**
-* 🎨 **خروجی رنگی و خوانا در ترمینال**
-* 🗂 **پاکسازی خودکار پوشه خروجی**
-* 🧱 **ساختار ماژولار و قابل توسعه**
+### 🛡️ VPN Client (VLESS / VMess / Trojan / Shadowsocks / Hysteria2 / TUIC / WireGuard)
+- Built‑in **Xray‑core** with automatic updates  
+- Import configs from subscription links, clipboard, QR code, or JSON files  
+- Real‑time ping sorting, quick edit, revive (SNI replacement), and delete  
+- **TUN Mode** for system‑wide VPN  
+- **Kill Switch** (Windows Firewall) to prevent leaks  
+
+### ⚡ Cloudflare IP Scanner (CF Scanner)
+- Multi‑threaded scanning of Cloudflare IP ranges  
+- Automatic detection of working ports, handshake verification, and speed testing  
+- Generates VLESS configs (WS / gRPC / TCP) with the best DNS  
+- **ISP‑aware Fragment** (auto‑tuned for MCI, Irancell, Rightel)  
+- One‑click subscription generation and GitHub upload  
+
+### 🌪️ WARP (AmneziaWG Anti‑DPI)
+- Integrated AmneziaWG tunnel  
+- Built‑in advanced scanner for WARP endpoints  
+- Automatic identity generation and connection  
+
+### 🧅 Tor Network & 🅿️ Psiphon
+- One‑click Tor connection with country exit node selection  
+- Psiphon stealth proxy with background auto‑connect and system proxy  
+
+### 🌍 DNS Changer
+- Massive list of DNS servers (IPv4, DoH, DoT, Local CF)  
+- **Local Cloudflare DNS Server** (only resolves CF domains for speed)  
+- **DNS Hunter** – finds the fastest DNS for a target domain  
+- DNS leak test, DNSSEC check, CNAME unmasking, DoH/DoT tester  
+
+### 🆘 Anti‑Filter (Panic Button)
+- Multi‑layer survival chain: DNS → Tor → Psiphon → WARP  
+- If all layers fail, automatically redirects to the Deep CF Scanner  
+- Recovers system proxy and DNS on stop  
+
+### 🎮 Gaming Mode
+- System resource monitor (CPU, RAM, GPU)  
+- One‑click accelerator: closes background apps, sets process priority  
+- Ping stabiliser with FEC (Forward Error Correction)  
+- Gaming DNS profiles and NAT optimisation  
+
+### 💬 Secure Messenger (E2E + TLS 1.3)
+- Host or join LAN rooms with password protection  
+- RSA‑2048 key exchange + AES‑256‑GCM encryption  
+- Private messages and system join/leave notifications  
+
+### 🌐 Secure Browser
+- Launches Chrome/Edge with custom User‑Agent, proxy, and anti‑fingerprinting flags  
+- Tor mode (routes browser through local Tor)  
+
+### 🛠️ Tools & Utilities
+- **Pre‑Processor (Traffic Shaping)** – SOCKS5 proxy that mimics real website traffic (Jitter, padding, TLS fingerprint spoofing)  
+- **Traffic Mimicry** – Disguise VPN traffic as regular sites (Aparat, YouTube, etc.)  
+- **Profile Maker** – Record and replay website behaviour  
+- **Datacenter Scanner** – Find clean Iranian IPs that reach Cloudflare Workers  
+- **Fastly Scanner** – Scan Fastly CDN edges for usable IPs  
+- **Port Scanner** – TCP/SYN/UDP with service detection and OS guessing  
+- **UUID & Password Generator**  
+
+### 💾 Smart Storage & Security
+- All configs, subscriptions, and settings stored in a user‑selectable folder  
+- Optional **AES‑256‑GCM encryption** with master password  
+- App lock with password protection  
+
+### 🧩 Plugin System
+- Install plugins from ZIP files or a remote worker store  
+- Enable/disable plugins; each can add UI panels to existing tabs  
 
 ---
 
-## 🖥️ پیش‌نیازها
+## 📸 Screenshots
 
-* Python **3.9+**
-* ویندوز (توصیه شده، ولی لینوکس هم قابل اجراست)
-* اینترنت پایدار
+*Add your own screenshots here. Examples:*
 
-### 📦 نصب وابستگی‌ها
+![Main UI](https://via.placeholder.com/800x450?text=VPN+Client+Tab)  
+*VPN Client tab with config management*
 
-```bash
-pip install requests colorama urllib3
+![Scanner](https://via.placeholder.com/800x450?text=CF+Scanner+Tab)  
+*Cloudflare scanner generating configs in real‑time*
+
+---
+
+## 💻 Requirements
+
+- **Windows 10/11** (administrator rights recommended for TUN, DNS, WARP)  
+- **Python 3.9+** (if running from source)  
+- Internet connection  
+
+*Linux support is partially available but not fully tested.*
+
+---
+
+## 📦 Installation
+
+### Option 1: Download Pre‑built Release (Easiest)
+Grab the latest `NetTools.Pro.zip` from the [Releases page](https://github.com/Devtahas/CG_BPB/releases). Extract and run `NetTools Pro.exe`. No Python required.
+
+### Option 2: Run from Source
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Devtahas/CG_BPB.git
+   cd CG_BPB
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the application:
+   ```bash
+   python main.pyw
+   ```
+
+> 💡 If the app fails to start due to missing DLLs, install the latest [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+
+---
+
+## ⚙️ First‑Time Setup
+
+1. Launch **NetTools Pro**.  
+2. Go to the **⚡ CF Scanner** tab.  
+3. Enter your **VLESS UUID** (generate one with the included tool or from [uuidgenerator.net](https://www.uuidgenerator.net)).  
+4. Fill in your **Worker Host** and **WS/gRPC Path** (from your Cloudflare Worker / BPB panel).  
+5. Adjust scanning settings (ports, networks, fragment) or leave defaults.  
+6. Click **▶ START ADVANCED SCAN** – the scanner will find the fastest IPs and generate configs.  
+7. Then switch to the **🛡️ VPN Client** tab, select a generated config, and click **▶ CONNECT**.  
+
+> Detailed video tutorials will be added to the Telegram channel soon.
+
+---
+
+## 🧠 Usage Tips
+
+- **Pre‑Processor**: Found in `Tools → Pre‑Processor`. It automatically detects the best whitelist domain and creates a mimicry profile to bypass DPI even before your VPN.  
+- **VPN‑in‑VPN Chain**: Use `VPN Client → VPN‑in‑VPN Chain` tab to automatically chain Traffic Mimicry → Pre‑VPN → Main config for maximum resilience.  
+- **DNS Changer**: The `Local CF DNS Server` resolves only Cloudflare domains to speed up scanning; it can also be set as your system DNS.  
+- **Anti‑Filter Panic Button**: Press it when everything else fails – it will try every bypass method in sequence and finally launch a Deep Scan.
+
+---
+
+## 🔒 Security & Privacy
+
+- All saved configurations can be protected with a **master password** (AES‑256‑GCM).  
+- Application lock requires a password to open.  
+- Xray‑core and other engines are downloaded from official sources; you can verify checksums if needed.  
+- No telemetry or data collection – everything runs locally.
+
+---
+
+## 📜 Disclaimer
+
+This tool is intended for **educational and research purposes** only. The developers are not responsible for any misuse, illegal activities, or damage caused by this software. Ensure that you comply with the laws of your country.
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.  
+Developers wishing to create plugins should read the `Plugin System` documentation (coming soon).
+
+---
+
+## ⭐ Support the Project
+
+- **Star** the repository ⭐  
+- **Report bugs** via GitHub Issues 🐛  
+- **Suggest features** in the Telegram group 💬  
+- **Share** with friends who need an all‑in‑one network toolbox 📡
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE) (see LICENSE file for details).
+
+---
+
+**Made with ❤️ by [@DevTaha](https://github.com/Devtahas) and contributors**
 ```
-
----
-
-## ⚙️ تنظیمات اولیه
-
-قبل از اجرای اسکنر، مقادیر زیر را در فایل اسکنر (`bpb6.py`) ویرایش کنید:
-
-```python
-WORKER_HOST = "your-worker.workers.dev"
-WS_PATH = "/your-websocket-path"
-USER_UUID = "یک-UUID-رندوم-اینجا"
-```
-و یا اینکه از طریق نرم افزار این کار را انجام دهید . خودکار یک صفحه روی لوکال بالا میاره و میتونید اونجا مقادیر رو وارد کنید خودکار همگام سازی میشه و اطلاعات در یک پوشه تو دسکتاپ ذخیره میکنه
-> ⚠️ UUID رندوم بسازید: [https://www.uuidgenerator.net/](https://www.uuidgenerator.net/)
-
----
-
-## 🔧 تنظیمات قابل شخصی‌سازی
-
-| متغیر              | توضیح                        |
-| ------------------ | ---------------------------- |
-| `HTTP_PORTS`       | پورت‌هایی که تست می‌شوند     |
-| `CLOUDFLARE_CIDRS` | رنج‌های آی‌پی Cloudflare     |
-| `SAMPLES_PER_CIDR` | تعداد نمونه‌برداری از هر رنج |
-| `MAX_WORKERS`      | تعداد تردهای همزمان          |
-| `TIMEOUT`          | تایم‌اوت اتصال               |
-| `DNS_SERVERS`      | لیست DNSهای مورد استفاده     |
-
----
-
-## 🚀 نحوه اجرا: (البته میتوانید از بخش release نرم افزار را دانلود و اجرا  کنید بدون نیاز به ران کردن و اجرای هیچ نوع کد!)
-
-```bash
-python bpb6.py
-```
-## محیط نرم افزار 
-
-> ![نرم افزار](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(500).png)
-
----
-
-## 🎯 حالت‌های اجرا
-
-### 1️⃣ حالت پیش‌فرض (Default Scanner)
-
-* اسکن خودکار رنج‌های Cloudflare
-* مناسب برای پیدا کردن IP سالم و تمیز
-
-### 2️⃣ حالت سفارشی (Custom Scanner)
-
-* وارد کردن IP دلخواه
-* مناسب برای تست هدفمند و محدود
-
-3️⃣### حالت  Deep Scanner (Ports 1 to 65535 - Takes Time!))
-* مانند حالت پیشفرض اما با تمام پورت های موجود دنیا و کمتر شناخته شده شروع به تست میکند
-* مناسب برای شرایط سخت
- 
-4️⃣### حالت  Hope Mode (Ports 1 to 65535 + Massive DNS List))
-* این حالت در سخترین شرایط ممکن از لیست عظیم DNS های کمتر شناخته شده و پورت های کمتر شناخته شده استفاده میکند
-* مناسب برای شرایط بسیار سخت
-* مدت زیادی و اینترنت زیادی مصرف میکند
----
-
-## 📝 آموزش بدست آوردن مقادیر WORKER_HOST و WS_PATH
-### 1️⃣ ساخت پنل BPB و دریافت کانفیگ‌ها
-
-1. وارد پنل BPB شوید
-2. کانفیگ‌ها را دانلود کنید
-3. یک کانفیگ انتخاب و باز کنید
-
-> ![نمونه کانفیگ](https://github.com/Devtahas/config-generator-/blob/main/assets/config-sample.png.jpg)
-
----
-
-### 2️⃣ پیدا کردن WORKER_HOST و WS_PATH
-
-1. کانفیگ موردنظر را در کلاینت باز کنید و روی **ویرایش** کلیک کنید
-2. دنبال **path** بگردید
-3. **WORKER_HOST**: آدرس ورکر (مثال: `test.sajdgsh.workers.dev`)
-4. **WS_PATH**: رشته WebSocket path (مثال: `/NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560`)
-
-
-
----
-
-### 3️⃣ جایگذاری در اسکنر
-
-```python
-WORKER_HOST = "test.sajdgsh.workers.dev"
-WS_PATH = "/NEJEJDHDVBDJDJDVHDIDHjdvhdksovQS5PTkxJTkURJKEJEHV0=?ed=2560"
-USER_UUID = "یک-UUID-رندوم-اینجا"
-```
-اگه از نرم افزار استفاده میکیند خودکار یک صفحه باز میکند که میتوانید مقادیر رو داخل اون صفحه جایگذاری کنید بعدش روی دسکتاپ پوشه ساخته میشه که اطلاعات اونجا ذخیره میشن برای اجرای اسکنر . فقط بار اول نیازه که مقادیر رو وارد کنید و بار های دیگه خودش خودکار از اطلاعات ذخیره شده استفاده میکنه و مقادیر رو جایگذاری میکنه
-
-> ![نمونه کانفیگ](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(535).png)
-
----
-
-### 4️⃣ اجرای اسکنر
-
-1. اطمینان از عدم اتصال به VPN
-2. اجرای دستور:
-
-```bash
-python bpb6.py
-```
-
-> ![اجرای اسکنر](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(519).png)
-
-3. منتظر بمانید تا اسکن کامل شود و پیام **Done** نمایش داده شود برای مثال :
-   
-> ![پایان اسکن](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(501).png)
-
-
----
-
-### 5️⃣ پیدا کردن فایل خروجی
-
-1. مسیر: `D:\allconfigs\`
-2. فایل‌ها:
-
-```
-Configs/            # کانفیگ‌های JSON
-scan_log.txt         # گزارش اسکن
-Verified_IPs.txt     # IPهای سالم
-sub.txt              # سابسکریپشن base64
-```
-
-> ![پوشه خروجی](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(488).png)
-
----
-
-### 6️⃣ آپلود سابسکریپشن در GitHub
-
-1. وارد [GitHub](http://github.com/) شوید
-2. ریپو بسازید و `sub.txt` را آپلود کنید
-3. روی گزینه **Raw** کلیک کنید تا لینک مستقیم دریافت شود
-
-> ![آپلود در گیت‌هاب](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(489).png)
-
-> ![raw لینک](https://github.com/Devtahas/config-generator-/blob/main/assets/photo_2026-02-20_18-31-16.jpg)
----
-
-### 7️⃣ استفاده در کلاینت‌ها
-
-1. لینک Raw را کپی کنید
-2. در کلاینت Karing یا v2rayNG، گزینه **Import Subscription** را بزنید
-3. لینک را پیست کنید و Update کنید ✅
-
-> ![نمونه Karing](https://github.com/Devtahas/config-generator-/blob/main/assets/Screenshot%20(490).png)
-
----
-
-### 8️⃣ نکته مهم
-
-اگر بعد از چند روز سرعت کند شد:
-
-* دوباره اسکنر را اجرا کنید
-* فایل جدید `sub.txt` را آپلود کنید و قبلی را حذف کنید
-* لینک سابسکریپشن به‌صورت خودکار آپدیت می‌شود
-
----
-
-## 📱 کلاینت‌های پیشنهادی
-
-| کلاینت           | لینک دانلود                                                         |
-| ---------------- | ------------------------------------------------------------------- |
-| **Karing**       | [اندروید/ویندوز/لینوکس](https://github.com/KaringX/karing/releases) |
-| **v2rayNG**      | [اندروید](https://github.com/2dust/v2rayNG/releases)                |
-| **v2rayN**       | [ویندوز](https://github.com/2dust/v2rayN/releases)                  |
-| **Hiddify Next** | [اندروید/iOS](https://github.com/hiddify/hiddify-next/releases)     |
-
----
-
-## ⚡ نکات افزایش سرعت
-
-* افزایش `MAX_WORKERS`
-* کاهش `SAMPLES_PER_CIDR`
-* کوتاه نگه داشتن لیست DNS
-
----
-
-## 🔐 نکات امنیتی و مهم
-
-* بهترین عملکرد روی پورت‌های TLS
-* کیفیت شبکه و ISP بر نتایج تاثیرگذار است
-* این ابزار برای اهداف آموزشی و تحقیقاتی منتشر شده است
-
----
-
-## ❗ سلب مسئولیت
-
-استفاده نادرست از این ابزار بر عهده کاربر است.
-
----
-
-## ⭐ حمایت
-
-* ⭐ ستاره دادن به ریپو
-* 🐛 ثبت Issue برای باگ‌ها
-* 🔧 ارسال Pull Request برای بهبود
-
