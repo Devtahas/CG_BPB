@@ -10,14 +10,12 @@ import time
 import json
 import requests
 import datetime
-import urllib3
 import socket
 import random
 import concurrent.futures
 import ipaddress
-from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK, DIRS
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from config import CF_ORANGE, CF_ORANGE_HOVER, BG_PANEL, BG_DARK, DIRS, storage_crypto
+from tabs.crypto_manager import storage_crypto
 
 def get_core_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -29,6 +27,27 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
+
+def cleanup_leftover_warp_service():
+    """پاکسازی هرگونه سرویس باقی‌مانده از اجراهای قبلی (حتی بدون دسترسی ادمین)"""
+    tunnel_name = "nettools_warp"
+    service_name = f"AmneziaWGTunnel${tunnel_name}"
+    try:
+        # بررسی و توقف سرویس
+        subprocess.run(["sc", "stop", service_name], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        time.sleep(0.5)
+        # حذف سرویس با sc
+        subprocess.run(["sc", "delete", service_name], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception:
+        pass
+    # پاکسازی با awg.exe اگر موجود باشد
+    awg_exe = get_core_path(os.path.join("cores", "wireguard", "amneziawg.exe"))
+    if os.path.exists(awg_exe):
+        try:
+            subprocess.run([awg_exe, "/uninstalltunnelservice", tunnel_name],
+                           capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        except Exception:
+            pass
 
 # ==========================================
 # پنجره اسکنر پیشرفته و اختصاصی WARP
@@ -130,21 +149,29 @@ class WarpScannerWindow(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def load_config(self):
-        if os.path.exists(self.config_file):
+        data = storage_crypto.load_json(self.config_file)
+        if data is not None:
             try:
-                with open(self.config_file, 'r') as f:
-                    data = json.load(f)
-                    self.custom_cidrs = data.get("cidrs", self.default_cidrs.copy())
-                    self.custom_ports = data.get("ports", self.default_ports.copy())
-                    self.threads_val = data.get("threads", 50)
-                    self.samples_val = data.get("samples", 20)
+                self.custom_cidrs = data.get("cidrs", self.default_cidrs.copy())
+                self.custom_ports = data.get("ports", self.default_ports.copy())
+                self.threads_val = data.get("threads", 50)
+                self.samples_val = data.get("samples", 20)
             except: pass
+        else:
+            if os.path.exists(self.config_file):
+                try:
+                    with open(self.config_file, 'r') as f:
+                        data = json.load(f)
+                        self.custom_cidrs = data.get("cidrs", self.default_cidrs.copy())
+                        self.custom_ports = data.get("ports", self.default_ports.copy())
+                        self.threads_val = data.get("threads", 50)
+                        self.samples_val = data.get("samples", 20)
+                        self.save_config()
+                except: pass
 
     def save_config(self):
         data = {"cidrs": self.custom_cidrs, "ports": self.custom_ports, "threads": int(self.slider_threads.get()), "samples": int(self.slider_samples.get())}
-        try:
-            with open(self.config_file, 'w') as f: json.dump(data, f)
-        except: pass
+        storage_crypto.save_json(self.config_file, data)
 
     def on_close(self):
         self.save_config()
@@ -271,7 +298,6 @@ class WarpScannerWindow(ctk.CTkToplevel):
                 return None
             try:
                 start_time = time.time()
-                # پینگ روی پورت 443 انجام میشه تا آی‌پی های زنده کلودفلر (بدون درگیری با بلاک UDP) پیدا بشن
                 with socket.create_connection((ip, 443), timeout=1.5):
                     latency = int((time.time() - start_time) * 1000)
                     return (f"{ip}:{port}", latency)
@@ -302,10 +328,13 @@ class WarpScannerWindow(ctk.CTkToplevel):
             self.after(0, lambda: self.combo_endpoint.set(top_endpoints[0]))
             
             try:
-                if os.path.exists(self.profile_path):
-                    with open(self.profile_path, 'r') as f: data = json.load(f)
+                data = storage_crypto.load_json(self.profile_path)
+                if data is None and os.path.exists(self.profile_path):
+                    with open(self.profile_path, 'r') as f:
+                        data = json.load(f)
+                if data:
                     data["endpoint"] = top_endpoints[0]
-                    with open(self.profile_path, 'w') as f: json.dump(data, f)
+                    storage_crypto.save_json(self.profile_path, data)
             except: pass
 
             status_msg = f"✅ Stopped manually! Best Ping: {best_ping}ms." if self.stop_event.is_set() else f"✅ Done! Best Ping: {best_ping}ms."
@@ -335,6 +364,9 @@ class WarpFrame(ctk.CTkFrame):
         
         self.profile_path = os.path.join(DIRS["settings"], "warp_profile.json")
         self.temp_conf_path = os.path.join(DIRS["settings"], f"{self.tunnel_name}.conf")
+
+        # پاکسازی سرویس باقی‌مانده از اجرای قبلی (بدون توجه به admin)
+        cleanup_leftover_warp_service()
 
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.grid(row=0, column=0, pady=(30, 10), sticky="ew")
@@ -393,18 +425,22 @@ class WarpFrame(ctk.CTkFrame):
         WarpScannerWindow(self, self.combo_endpoint, self.profile_path)
 
     def load_profile(self):
-        if os.path.exists(self.profile_path):
+        data = storage_crypto.load_json(self.profile_path)
+        if data is None and os.path.exists(self.profile_path):
             try:
                 with open(self.profile_path, 'r') as f:
                     data = json.load(f)
-                    self.lbl_ip.configure(text=f"{data.get('v4', 'Unknown')}")
-                    if "endpoint" in data and data["endpoint"]:
-                        current_vals = self.combo_endpoint.cget("values")
-                        if data["endpoint"] not in current_vals:
-                            current_vals.append(data["endpoint"])
-                            self.combo_endpoint.configure(values=current_vals)
-                        self.combo_endpoint.set(data["endpoint"])
+                    storage_crypto.save_json(self.profile_path, data)
             except: pass
+        
+        if data:
+            self.lbl_ip.configure(text=f"{data.get('v4', 'Unknown')}")
+            if "endpoint" in data and data["endpoint"]:
+                current_vals = list(self.combo_endpoint.cget("values"))
+                if data["endpoint"] not in current_vals:
+                    current_vals.append(data["endpoint"])
+                    self.combo_endpoint.configure(values=current_vals)
+                self.combo_endpoint.set(data["endpoint"])
 
     def generate_new_warp(self):
         if self.is_connected:
@@ -431,7 +467,7 @@ class WarpFrame(ctk.CTkFrame):
             headers = {"Content-Type": "application/json; charset=UTF-8", "User-Agent": "okhttp/3.12.1"}
             payload = {"key": public_key, "install_id": "", "fcm_token": "", "tos": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z"), "model": "Windows", "locale": "en_US"}
 
-            resp = requests.post(url, json=payload, headers=headers, timeout=15, verify=False)
+            resp = requests.post(url, json=payload, headers=headers, timeout=15)
             resp.raise_for_status()
             result = resp.json()
 
@@ -444,8 +480,7 @@ class WarpFrame(ctk.CTkFrame):
                 "peer_pub": peer_pub, "endpoint": self.combo_endpoint.get()
             }
 
-            with open(self.profile_path, 'w') as f:
-                json.dump(profile_data, f)
+            storage_crypto.save_json(self.profile_path, profile_data)
 
             self.after(0, lambda: self.lbl_ip.configure(text=v4, text_color="#66BB6A"))
             self.after(0, lambda: messagebox.showinfo("Success", "New WARP Identity generated successfully!"))
@@ -464,13 +499,15 @@ class WarpFrame(ctk.CTkFrame):
             messagebox.showerror("Admin Required", "AmneziaWG needs Administrator privileges.\nPlease Run the app as Administrator.")
             return
 
-        if not os.path.exists(self.profile_path):
+        if not os.path.exists(self.profile_path) and not os.path.exists(self.profile_path + '.enc'):
             messagebox.showinfo("Wait", "Generating your first WARP Identity... Please wait.")
             self.btn_connect.configure(state="disabled")
             def gen_and_connect():
                 self._generate_thread()
-                if os.path.exists(self.profile_path): self.after(0, self._proceed_connection)
-                else: self.after(0, lambda: self.btn_connect.configure(state="normal"))
+                if os.path.exists(self.profile_path) or os.path.exists(self.profile_path + '.enc'):
+                    self.after(0, self._proceed_connection)
+                else:
+                    self.after(0, lambda: self.btn_connect.configure(state="normal"))
             threading.Thread(target=gen_and_connect, daemon=True).start()
             return
 
@@ -478,7 +515,11 @@ class WarpFrame(ctk.CTkFrame):
 
     def _proceed_connection(self):
         try:
-            with open(self.profile_path, 'r') as f: data = json.load(f)
+            data = storage_crypto.load_json(self.profile_path)
+            if data is None:
+                with open(self.profile_path, 'r') as f:
+                    data = json.load(f)
+                    storage_crypto.save_json(self.profile_path, data)
         except:
             self.btn_connect.configure(state="normal")
             return
@@ -487,11 +528,8 @@ class WarpFrame(ctk.CTkFrame):
         if not endpoint: endpoint = "188.114.97.170:1701"
 
         data["endpoint"] = endpoint
-        with open(self.profile_path, 'w') as f: json.dump(data, f)
+        storage_crypto.save_json(self.profile_path, data)
 
-        # 🚀 تغییرات طلایی (Golden Config) برای دور زدن فیلترینگ اینترنت ایران
-        # 1. اضافه شدن v6 به روتینگ برای جلوگیری از Blackhole شدن ترافیک مرورگرها
-        # 2. تنظیم مقادیر Jc و سایزهای مجاز برای گول زدن DPI بدون مسدود شدن در کلودفلر
         conf_content = f"""[Interface]
 PrivateKey = {data['private_key']}
 Address = {data['v4']}/32, {data['v6']}/128
@@ -561,21 +599,7 @@ PersistentKeepalive = 15
         self.btn_generate.configure(state="normal")
 
     def stop_warp(self):
-        awg_exe = get_core_path(os.path.join("cores", "wireguard", "amneziawg.exe"))
-        tunnel_service = f"AmneziaWGTunnel${self.tunnel_name}"
-        
-        try:
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            startupinfo.wShowWindow = subprocess.SW_HIDE
-            
-            check_sc = subprocess.run(["sc", "query", tunnel_service], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW, startupinfo=startupinfo)
-            if check_sc.returncode == 0:
-                subprocess.run([awg_exe, "/uninstalltunnelservice", self.tunnel_name], creationflags=subprocess.CREATE_NO_WINDOW, startupinfo=startupinfo)
-                time.sleep(0.5)
-                subprocess.run(["sc", "stop", tunnel_service], creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except: pass
-            
+        cleanup_leftover_warp_service()  # پاکسازی کامل
         self.is_connected = False
         self.lbl_status.configure(text="Status: Disconnected", text_color="#EF5350")
         self.btn_connect.configure(text="▶ CONNECT", fg_color="#2E7D32", hover_color="#1B5E20")
