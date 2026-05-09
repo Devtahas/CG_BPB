@@ -27,24 +27,22 @@ jobs:
           pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
 
       - name: Build EXE with PyInstaller
-        working-directory: ./maim
         run: |
-          # تغییر مهم: دستور --add-data "cores;cores" اضافه شد تا هسته‌های تور و سایفون درون EXE جاگذاری شوند
+          # به دلیل اینکه فایل‌های پروژه در ریشه هستند، دیگر نیازی به تعریف working-directory نیست
           pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
-        working-directory: ./maim
         run: |
-          # تغییر مهم: بررسی می‌کنیم اگر پوشه xray در گیت‌هاب وجود داشت، آن را کنار فایل EXE کپی کند
+          # کپی کردن پوشه xray در صورت وجود
           if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
           
-          # فایل نهایی به همراه تمام محتویات را زیپ می‌کنیم
+          # بسته‌بندی نهایی
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: maim/NetTools_Pro_Release.zip 
+          files: NetTools_Pro_Release.zip # اصلاح مسیر فایل
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
