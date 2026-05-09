@@ -7,7 +7,14 @@ import threading
 import re
 import winreg
 import ctypes
+import time
 from config import CF_ORANGE, BG_PANEL, DIRS
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 def get_core_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -36,6 +43,7 @@ class TorFrame(ctk.CTkFrame):
         
         self.tor_process = None
         self.is_running = False
+        self.stop_event = threading.Event()  # ← اضافه شد
 
         # Header
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -114,6 +122,8 @@ class TorFrame(ctk.CTkFrame):
         os.makedirs(tor_data_dir, exist_ok=True)
 
         self.is_running = True
+        self.stop_event.clear()  # ← برای حلقه جدید
+
         self.combo_country.configure(state="disabled")
         self.btn_connect.configure(text="⏹ CANCEL", fg_color="#C62828", hover_color="#8E0000")
         self.lbl_status.configure(text="Status: Bootstrapping...", text_color=CF_ORANGE)
@@ -159,23 +169,33 @@ class TorFrame(ctk.CTkFrame):
         if not self.tor_process:
             return
 
-        while self.tor_process and self.tor_process.poll() is None:
-            line = self.tor_process.stdout.readline()
-            if not line:
+        # حلقه با بررسی stop_event و مدیریت خطا
+        while self.is_running and self.tor_process and self.tor_process.poll() is None:
+            if self.stop_event.is_set():
                 break
-                
             try:
-                decoded_line = line.decode('utf-8', errors='ignore').strip()
-                if "Bootstrapped" in decoded_line:
-                    match = re.search(r'Bootstrapped (\d+)%', decoded_line)
-                    if match:
-                        percent = int(match.group(1))
-                        try: detail = decoded_line.split("): ")[1]
-                        except: detail = decoded_line
-                            
-                        self.after(0, self._update_progress_ui, percent, detail)
-                        if percent == 100: break
-            except Exception: pass
+                line = self.tor_process.stdout.readline()
+                if not line:
+                    break
+                    
+                try:
+                    decoded_line = line.decode('utf-8', errors='ignore').strip()
+                    if "Bootstrapped" in decoded_line:
+                        match = re.search(r'Bootstrapped (\d+)%', decoded_line)
+                        if match:
+                            percent = int(match.group(1))
+                            try: detail = decoded_line.split("): ")[1]
+                            except: detail = decoded_line
+                                
+                            self.after(0, self._update_progress_ui, percent, detail)
+                            if percent == 100:
+                                break
+                except Exception:
+                    pass
+            except Exception:
+                # خطای خواندن یا decode – یک لحظه صبر کن و ادامه بده
+                time.sleep(0.5)
+                continue
 
     def _update_progress_ui(self, percent, detail):
         if not self.is_running:
@@ -193,17 +213,47 @@ class TorFrame(ctk.CTkFrame):
             self.lbl_detail.configure(text="Tor circuit established successfully. All System traffic is routed.")
 
     def stop_tor(self):
+        self.stop_event.set()  # سیگنال توقف فوری
+        self.is_running = False
+
         if self.tor_process:
             try:
                 self.tor_process.terminate()
-                os.system("taskkill /f /im tor.exe >nul 2>&1")
-            except: pass
+                # تلاش ملایم برای متوقف کردن
+                try:
+                    self.tor_process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    self.tor_process.kill()
+            except Exception:
+                pass
             self.tor_process = None
+
+        # پاکسازی با psutil در صورت وجود
+        if HAS_PSUTIL:
+            for proc in psutil.process_iter(['pid', 'name']):
+                try:
+                    if proc.info['name'] and proc.info['name'].lower() == 'tor.exe':
+                        proc.terminate()
+                        proc.wait(timeout=2)
+                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                    try:
+                        proc.kill()
+                    except:
+                        pass
+                except Exception:
+                    continue
+        else:
+            # fallback ایمن با taskkill
+            try:
+                subprocess.run(['taskkill', '/im', 'tor.exe'], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                time.sleep(2)
+                subprocess.run(['taskkill', '/F', '/im', 'tor.exe'], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            except:
+                pass
             
         # خاموش کردن پروکسی سیستم
         self.set_windows_proxy(False)
             
-        self.is_running = False
         self.progressbar.set(0)
         self.combo_country.configure(state="readonly")
         self.lbl_status.configure(text="Status: Disconnected", text_color="#EF5350")
