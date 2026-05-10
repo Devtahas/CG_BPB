@@ -1,0 +1,45 @@
+name: Build and Release EXE
+
+on:
+  push:
+    tags:
+      - 'v*'               # اجرای خودکار با تگ ورژن
+  workflow_dispatch:        # اجرای دستی از طریق تب Actions
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
+
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
+
+      - name: Create ZIP Package
+        run: |
+          if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
+          Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: NetTools_Pro_Release.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
