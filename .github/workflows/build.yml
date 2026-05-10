@@ -3,8 +3,13 @@ name: Build and Release EXE
 on:
   push:
     tags:
-      - 'v*'               # اجرای خودکار با تگ ورژن
-  workflow_dispatch:        # اجرای دستی از طریق تب Actions
+      - 'v*'                 # automatic when you push a version tag
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '🏷 Version tag (e.g., v9.6)'
+        required: true
+        default: 'v9.6'
 
 permissions:
   contents: write
@@ -39,6 +44,9 @@ jobs:
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
+          # when triggered by workflow_dispatch we pass the tag name from the input;
+          # this will also create the tag if it doesn't exist.
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
           files: NetTools_Pro_Release.zip
           generate_release_notes: true
         env:
