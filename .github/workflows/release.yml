@@ -3,7 +3,7 @@ name: Build and Release EXE
 on:
   push:
     tags:
-      - 'v*'                 # automatic when you push a version tag
+      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,24 +30,64 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
+        shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
+          Write-Host "Installing core packages..."
+          pip install pyinstaller customtkinter requests urllib3 psutil pillow
+          Write-Host "Installing optional packages from wheels (no C++ needed)..."
+          pip install --only-binary :all: pyzbar pystray 2>&1 | Out-Host
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed to install pyzbar/pystray with binary. Trying without them..."
+            # If they fail, we can still build without them
+          }
+          Write-Host "Verifying installed packages:"
+          pip list | Select-String -Pattern "pyinstaller|customtkinter|requests|urllib3|psutil|pillow|pyzbar|pystray"
+
+      - name: Check Required Files
+        shell: pwsh
+        run: |
+          Write-Host "Checking main.pyw..."
+          if (Test-Path main.pyw) { Write-Host "main.pyw found ✓" } else { Write-Host "main.pyw MISSING!" ; exit 1 }
+          Write-Host "Checking cores folder..."
+          if (Test-Path cores) { Write-Host "cores/ found ✓" } else { Write-Host "cores/ MISSING!" ; exit 1 }
+          Write-Host "Checking icon.ico..."
+          if (Test-Path icon.ico) { Write-Host "icon.ico found ✓" } else { Write-Host "icon.ico missing (will build without icon)" }
+          Write-Host "All required files present."
 
       - name: Build EXE with PyInstaller
+        shell: pwsh
         run: |
-          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
+          $pyinstCmd = "pyinstaller --onefile --noconsole --uac-admin --add-data 'cores;cores' --collect-all customtkinter"
+          # Only add pyzbar/pystray if they were installed
+          $pyzbarInstalled = (pip list | Select-String "pyzbar") -ne $null
+          $pystrayInstalled = (pip list | Select-String "pystray") -ne $null
+          if ($pyzbarInstalled) { $pyinstCmd += " --collect-all pyzbar" }
+          if ($pystrayInstalled) { $pyinstCmd += " --hidden-import pystray" }
+          $pyinstCmd += " --name NetTools_Pro main.pyw"
+          if (Test-Path icon.ico) { $pyinstCmd += " --icon=icon.ico" }
+          Write-Host "Running: $pyinstCmd"
+          Invoke-Expression $pyinstCmd
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Create ZIP Package
+        shell: pwsh
         run: |
-          if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
-          Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
+          if (Test-Path .\xray) { 
+            Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force 
+            Write-Host "xray folder bundled ✓"
+          }
+          if (Test-Path .\dist\NetTools_Pro.exe) {
+            Write-Host "EXE found, creating ZIP..."
+            Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
+          } else {
+            Write-Host "EXE not found! Build may have failed."
+            exit 1
+          }
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          # when triggered by workflow_dispatch we pass the tag name from the input;
-          # this will also create the tag if it doesn't exist.
           tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
           files: NetTools_Pro_Release.zip
           generate_release_notes: true
