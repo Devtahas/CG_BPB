@@ -30,15 +30,26 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
+          pip install dnspython pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
 
       - name: Build EXE with PyInstaller
-        working-directory: ./maim           # ★ دایرکتوری اصلی پروژه
+        working-directory: ./maim
         run: |
-          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
+          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico `
+            --add-data "cores;cores" `
+            --collect-all customtkinter `
+            --collect-all pyzbar `
+            --hidden-import pystray `
+            --hidden-import dns.resolver `
+            --hidden-import dns.exception `
+            --hidden-import dns.flags `
+            --hidden-import dns.edns `
+            --hidden-import dns.query `
+            --hidden-import dns.message `
+            --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
-        working-directory: ./maim           # ★ دایرکتوری اصلی پروژه
+        working-directory: ./maim
         run: |
           if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
@@ -47,7 +58,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
-          files: maim/NetTools_Pro_Release.zip   # ★ مسیر خروجی را از maim بخوان
+          files: maim/NetTools_Pro_Release.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
