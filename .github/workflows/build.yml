@@ -3,7 +3,8 @@ name: Build and Release EXE
 on:
   push:
     tags:
-      - 'v*' # این اکشن فقط زمانی اجرا میشه که تگ ورژن جدید بزنی (مثلا v1.0.1)
+      - 'v*'               # اجرای خودکار با تگ ورژن
+  workflow_dispatch:        # اجرای دستی از طریق تب Actions
 
 permissions:
   contents: write
@@ -28,21 +29,17 @@ jobs:
 
       - name: Build EXE with PyInstaller
         run: |
-          # به دلیل اینکه فایل‌های پروژه در ریشه هستند، دیگر نیازی به تعریف working-directory نیست
           pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico --add-data "cores;cores" --collect-all customtkinter --collect-all pyzbar --hidden-import pystray --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
         run: |
-          # کپی کردن پوشه xray در صورت وجود
           if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
-          
-          # بسته‌بندی نهایی
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: NetTools_Pro_Release.zip # اصلاح مسیر فایل
+          files: NetTools_Pro_Release.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
