@@ -30,7 +30,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install dnspython pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
+          pip install dnspython cryptography pyinstaller customtkinter requests urllib3 psutil pillow pyzbar pystray
 
       - name: Build EXE with PyInstaller
         working-directory: ./maim
@@ -39,6 +39,7 @@ jobs:
             --add-data "cores;cores" `
             --collect-all customtkinter `
             --collect-all pyzbar `
+            --collect-all cryptography `
             --hidden-import pystray `
             --hidden-import dns.resolver `
             --hidden-import dns.exception `
