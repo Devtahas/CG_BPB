@@ -18,9 +18,6 @@ class ScannerManagers:
     # ==========================================
     # CIDR Manager (مدیریت رنج‌های IP)
     # ==========================================
-        # ==========================================
-    # CIDR Manager (حالت جدید با Textbox)
-    # ==========================================
     def open_cidr_manager(self, custom_cidrs, save_callback, refresh_callback):
         """باز کردن پنجره مدیریت CIDR با پشتیبانی از لیست‌های حجیم"""
         cidr_win = ctk.CTkToplevel(self.parent)
@@ -70,18 +67,16 @@ class ScannerManagers:
         ctk.CTkButton(btn_frame, text="💾 Save & Close", fg_color=CF_ORANGE, text_color="black",
                      hover_color=CF_ORANGE_HOVER, command=save_changes).pack(side="right", padx=5)
 
-        def reset_defaults():
-            """بازگشت به لیست پیش‌فرض (همان کلادفلر) و به‌روزرسانی Textbox"""
-            # فقط برای نمایش، خود custom_cidrs در ScannerUI با Assetmanager هماهنگ است
-            default_list = CLOUDFLARE_CIDRS if hasattr(self, 'CLOUDFLARE_CIDRS') else []
+        # ----- دکمه Clear All (قبلاً به اشتباه Reset Defaults نام داشت) -----
+        def clear_editor():
+            """پاک کردن کامل Textbox"""
             self.cidr_textbox.delete("1.0", "end")
-            self.cidr_textbox.insert("1.0", "\n".join(default_list))
 
-        ctk.CTkButton(btn_frame, text="🔄 Reset Defaults", fg_color="transparent", border_width=1,
+        ctk.CTkButton(btn_frame, text="Clear All", fg_color="transparent", border_width=1,
                      border_color=CF_ORANGE, text_color=CF_ORANGE, hover_color="#332015",
-                     command=reset_defaults).pack(pady=(5, 0))
+                     command=clear_editor).pack(pady=(5, 0))
         
-        # تابع به‌روزرسانی لیست
+        # تابع به‌روزرسانی لیست (در این نسخه استفاده نمی‌شود ولی نگه داشته شده)
         def refresh_cidr_ui():
             for widget in cidr_scroll.winfo_children():
                 widget.destroy()
@@ -134,18 +129,18 @@ class ScannerManagers:
         ctk.CTkButton(add_frame, text="Add", width=60, fg_color=CF_ORANGE, text_color="black", 
                      hover_color=CF_ORANGE_HOVER, command=add_cidr).pack(side="left")
         
-        # دکمه ریست به حالت پیش‌فرض
+        # دکمه بازنشانی اصلی (ذخیره و جایگزینی لیست با پیش‌فرض)
         def reset_cidrs():
             custom_cidrs.clear()
             custom_cidrs.extend(CLOUDFLARE_CIDRS)
             save_callback()
             refresh_cidr_ui()
         
-        ctk.CTkButton(cidr_win, text="🔄 Reset Defaults", fg_color="transparent", border_width=1, 
+        ctk.CTkButton(cidr_win, text="🔄 Reset to Defaults", fg_color="transparent", border_width=1, 
                      border_color=CF_ORANGE, text_color=CF_ORANGE, hover_color="#332015", 
                      command=reset_cidrs).pack(pady=10)
         
-        refresh_cidr_ui()
+        # refresh_cidr_ui() اولیه حذف شده (چون دیگر با Textbox کار می‌کنیم)
     
     # ==========================================
     # DNS Manager (مدیریت DNS)
