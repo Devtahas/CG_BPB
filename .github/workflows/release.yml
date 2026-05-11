@@ -33,7 +33,7 @@ jobs:
           pip install pyinstaller customtkinter>=5.2.0 requests>=2.31.0 urllib3>=2.0.0 cryptography>=41.0.0 psutil>=5.9.0 Pillow>=10.0.0 pystray>=0.19.4 dnspython>=2.4.0 colorama>=0.4.6 speedtest-cli>=2.1.3 matplotlib>=3.7.0 numpy>=1.24.0 selenium>=4.15.0 webdriver-manager>=4.0.0 scapy>=2.5.0 PySocks>=1.7.1 pywebview>=4.0.0 pyzbar>=0.1.9 wmi>=1.5.1 pynvml>=11.525 curl_cffi>=0.6.0 pywin32>=305
 
       - name: Build EXE with PyInstaller
-        working-directory: ./main
+        working-directory: ./maim
         run: |
           python -m PyInstaller --onefile --noconsole --uac-admin --icon=icon.ico `
             --add-data "cores;cores" `
@@ -63,7 +63,7 @@ jobs:
             --name NetTools_Pro main.pyw
 
       - name: Create ZIP Package
-        working-directory: ./main
+        working-directory: ./maim
         run: |
           if (Test-Path .\xray) { Copy-Item -Path .\xray -Destination .\dist\xray -Recurse -Force }
           Compress-Archive -Path .\dist\* -DestinationPath .\NetTools_Pro_Release.zip
@@ -72,7 +72,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
-          files: main/NetTools_Pro_Release.zip
+          files: maim/NetTools_Pro_Release.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
