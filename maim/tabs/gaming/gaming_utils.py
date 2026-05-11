@@ -6,11 +6,12 @@ import subprocess
 import re
 import platform
 
-# GPUtil را با try/except ایمپورت می‌کنیم (اختیاری)
+# جایگزینی GPUtil با pynvml برای جلوگیری از باز شدن پنجره nvidia-smi
 try:
-    import GPUtil
+    import pynvml
     HAS_GPU = True
-except ImportError:
+    pynvml.nvmlInit()
+except Exception:
     HAS_GPU = False
 
 # wmi و pythoncom فقط برای ویندوز و در صورت نیاز
@@ -46,23 +47,29 @@ class GamingUtils:
     
     @staticmethod
     def get_gpu_usage():
-        """دریافت مصرف GPU (با استفاده از GPUtil)"""
+        """دریافت مصرف GPU با pynvml (بدون نمایش پنجره)"""
         if not HAS_GPU:
             return {"percent": 0, "temp": 0, "memory_used": 0, "memory_total": 0}
         
         try:
-            gpus = GPUtil.getGPUs()
-            if gpus:
-                gpu = gpus[0]
-                return {
-                    "percent": gpu.load * 100,
-                    "temp": gpu.temperature,
-                    "memory_used": gpu.memoryUsed,
-                    "memory_total": gpu.memoryTotal
-                }
-        except:
-            pass
-        return {"percent": 0, "temp": 0, "memory_used": 0, "memory_total": 0}
+            device_count = pynvml.nvmlDeviceGetCount()
+            if device_count == 0:
+                return {"percent": 0, "temp": 0, "memory_used": 0, "memory_total": 0}
+            
+            # فقط GPU اول را بررسی می‌کنیم
+            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+            mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+            
+            return {
+                "percent": util.gpu,
+                "temp": temp,
+                "memory_used": mem.used // (1024**2),   # MB
+                "memory_total": mem.total // (1024**2)
+            }
+        except Exception:
+            return {"percent": 0, "temp": 0, "memory_used": 0, "memory_total": 0}
     
     @staticmethod
     def get_top_processes(n=5):
@@ -176,4 +183,3 @@ class GamingUtils:
             return 0
         except:
             return 0
-
