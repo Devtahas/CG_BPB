@@ -30,7 +30,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install customtkinter>=5.2.0 requests>=2.31.0 urllib3>=2.0.0 cryptography>=41.0.0 psutil>=5.9.0 Pillow>=10.0.0 pystray>=0.19.4 dnspython>=2.4.0 colorama>=0.4.6 speedtest-cli>=2.1.3 matplotlib>=3.7.0 numpy>=1.24.0 selenium>=4.15.0 webdriver-manager>=4.0.0 scapy>=2.5.0 PySocks>=1.7.1 pywebview>=4.0.0 pyzbar>=0.1.9 wmi>=1.5.1 pypiwin32>=305 GPUtil>=1.4.0 curl_cffi>=0.6.0 utls>=0.0.7
+          pip install customtkinter>=5.2.0 requests>=2.31.0 urllib3>=2.0.0 cryptography>=41.0.0 psutil>=5.9.0 Pillow>=10.0.0 pystray>=0.19.4 dnspython>=2.4.0 colorama>=0.4.6 speedtest-cli>=2.1.3 matplotlib>=3.7.0 numpy>=1.24.0 selenium>=4.15.0 webdriver-manager>=4.0.0 scapy>=2.5.0 PySocks>=1.7.1 pywebview>=4.0.0 pyzbar>=0.1.9 wmi>=1.5.1 GPUtil>=1.4.0 curl_cffi>=0.6.0 utls>=0.0.7 pywin32>=305
 
       - name: Build EXE with PyInstaller
         working-directory: ./maim
