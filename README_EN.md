@@ -2,7 +2,7 @@
 **English** | **[فارسی](README.md)**
 
 
-... (بقیه محتوای انگلیسی)
+ 
 **NetTools Pro** is an all‑in‑one Windows application for network engineers, privacy enthusiasts, and anyone who needs to bypass internet censorship or optimize their connection.  
 It combines a modern VPN client, advanced scanners, DPI‑bypass techniques, DNS management, and many other tools in a single, user‑friendly interface.
 
