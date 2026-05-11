@@ -35,7 +35,7 @@ jobs:
       - name: Build EXE with PyInstaller
         working-directory: ./maim
         run: |
-          pyinstaller --onefile --noconsole --uac-admin --icon=icon.ico `
+          python -m PyInstaller --onefile --noconsole --uac-admin --icon=icon.ico `
             --add-data "cores;cores" `
             --collect-all customtkinter `
             --collect-all pyzbar `
